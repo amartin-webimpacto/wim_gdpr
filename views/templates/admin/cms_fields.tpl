@@ -3,7 +3,7 @@
 <div class="form-group">
     <label class="control-label col-lg-3 required">
         <span class="label-tooltip" data-toggle="tooltip" data-html="true" title=""
-              data-original-title="Este CMS está protegido por Web Impacto GDPR y es obligatorio indicar el motivo de su modificación">
+              data-original-title="Este CMS está protegido por WebImpacto GDPR y es obligatorio indicar el motivo de su modificación">
         Motivo de modificación
         </span>
     </label>
