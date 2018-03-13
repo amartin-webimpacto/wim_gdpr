@@ -102,6 +102,9 @@ class Wim_gdpr extends Module
         }
 
         $this->context->smarty->assign('module_dir', $this->_path);
+        $this->context->smarty->assign(array(
+            'token'  => Tools::getAdminTokenLite('AdminModules')
+        ));
 
         $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
 
