@@ -309,19 +309,25 @@ class Wim_gdpr extends Module
                 $this->context->controller->errors[] = Tools::displayError('El CMS está protegido por WebImpacto GDPR y debe estar activo.');
             }
             if (count($this->context->controller->errors) > 0) {
-                //$this->smarty->assign('languageList', "languageList");
-
-                //return $this->display = 'edit_page';
-                //(__FILE__, 'views/templates/admin/cms_fields.tpl');
-                die($this->context->controller->display(__FILE__, 'edit_page'));
-                //die($this->display(__FILE__, 'edit_page'));
-                //throw new PrestaShopException('ESTE ES MI ERROR PERSONALIZADO');
-                //$this->errors[] "asdf"; // ERROR
-                //return $this->context->controller->display(__FILE__, 'edit_page');
-                //return $this->display = 'edit_page';
+                
                 /*
-                //return $this->context->controller->errors;
-                //ddd($this->context->controller->errors);
+                $this->context->controller->errors[] = $this->l('Custom Error');
+                $errors[] = $this->l('Custom Error');
+
+                error_log("------ UPDATE BEFORE");
+                $this->smarty->assign('languageList', "languageList");
+
+                return $this->display = 'edit_page';
+                (__FILE__, 'views/templates/admin/cms_fields.tpl');
+                die($this->context->controller->display(__FILE__, 'edit_page'));
+                die($this->display(__FILE__, 'edit_page'));
+                throw new PrestaShopException('ESTE ES MI ERROR PERSONALIZADO');
+                $this->errors[] "asdf"; // ERROR
+                return $this->context->controller->display(__FILE__, 'edit_page');
+                return $this->display = 'edit_page';
+
+                return $this->context->controller->errors;
+                ddd($this->context->controller->errors);
                 return $this->context->controller->display(__FILE__, 'edit_page');
                 throw new PrestaShopException('ESTE ES MI ERROR PERSONALIZADO');
                 return false;
@@ -336,7 +342,7 @@ class Wim_gdpr extends Module
 
         // Delete Multiple CMS: No se puede eliminar un CMS protegido
         if (Tools::isSubmit('submitBulkdeletecms') && (!$this->canDeleteMultipleCMS($this->boxes))) {
-            $this->context->controller->errors[] = Tools::displayError('Alguno de los CMS seleccionados está protegido por Web Impacto GDPR y no se puede eliminar. Ninguna acción se ha llevado a cabo.');
+            $this->context->controller->errors[] = Tools::displayError('Alguno de los CMS seleccionados está protegido por WebImpacto GDPR y no se puede eliminar. Ninguna acción se ha llevado a cabo.');
             return false;
         }
 
