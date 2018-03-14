@@ -479,7 +479,7 @@ class Wim_gdpr extends Module
 
     public function addWimGdprUserAceptance($id_gdpr_cms_version)
     {
-        $id_customer = $this::getCurrentCustomer();
+        $id_customer = Wim_gdpr::getCurrentCustomer();
 
         $wim_gdpr_user_aceptance = array(
             'id_customer' => pSQL($id_customer),
@@ -681,7 +681,7 @@ class Wim_gdpr extends Module
     public function canDeleteMultipleCMS($cmsList)
     {
         foreach ($cmsList as $id_cms) {
-            if (!$this->canDeleteCMS($id_cms)) {
+            if (!Wim_gdpr::canDeleteCMS($id_cms)) {
                 return false;
             }
         }

@@ -6,13 +6,7 @@ require_once(dirname(__FILE__) . '/wim_gdpr.php');
 
 switch (Tools::getValue('action')) {
     case 'acceptCms' :
-        $list = Tools::getValue("id_gdpr_cms_version");
-        foreach ($list as $id_gdpr_cms_version) {
-            if (!Wim_gdpr::addWimGdprUserAceptance($id_gdpr_cms_version)) {
-                die(Tools::jsonEncode(array('result' => 'error')));
-            }
-        }
-        die(Tools::jsonEncode(array('result' => 'ok')));
+        acceptCms(Tools::getValue("id_gdpr_cms_version"));
         break;
     case 'getCms' :
         $cmsVersion = Wim_gdpr::getCmsVersion(Tools::getValue("id_gdpr_cms_version"));
@@ -30,9 +24,7 @@ exit;
 function canDeleteCms($cms)
 {
     if (is_array($cms)) {
-        error_log("------------------ ES ARRAY");
         if (!Wim_gdpr::canDeleteMultipleCMS($cms)) {
-            error_log("------------------ NO PUEDE ELIMINARLO");
             die(Tools::jsonEncode(array('result' => "false")));
         }
     } else {
@@ -41,4 +33,14 @@ function canDeleteCms($cms)
         }
     }
     die(Tools::jsonEncode(array('result' => "true")));
+}
+
+function acceptCms($list)
+{
+    foreach ($list as $id_gdpr_cms_version) {
+        if (!Wim_gdpr::addWimGdprUserAceptance($id_gdpr_cms_version)) {
+            die(Tools::jsonEncode(array('result' => 'error')));
+        }
+    }
+    die(Tools::jsonEncode(array('result' => 'ok')));
 }
