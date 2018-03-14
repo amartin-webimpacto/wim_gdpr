@@ -1,7 +1,8 @@
 $(document).ready(function () {
     overrideDeleteCmsButtons();
-    overrideBulkDeleteCmsButtons();
+    overrideBulkDeleteCmsButton();
     overrideDisableCmsButtons();
+    overrideBulkDisableCmsButton();
 })
 
 /**
@@ -43,7 +44,7 @@ function preDelete(element) {
                     window.location.href = a.attr("href");
                 } else {
                     // no se pude eliminar, mostrar errror
-                    showError("No se puede eliminar el CMS porque stá protegido por WebImpacto GDPR");
+                    showError("No se puede eliminar el CMS porque está protegido por WebImpacto GDPR");
                 }
             } else {
                 event.stopPropagation();
@@ -61,12 +62,11 @@ function preDelete(element) {
  * Sobreescribe el comportamiento del boton "eliminar seleccion" del listado de CMS (borrado multiple)
  * para que antes de eliminar se compruebe si algún CMS seleccionado está protegido por wimgdpr
  */
-function overrideBulkDeleteCmsButtons() {
+function overrideBulkDeleteCmsButton() {
     var a = $(".bulk-actions").find(".icon-trash").parent();
     a.attr("elonclick", a.attr("onclick"));
     a.attr("onclick", "preDeleteMultiple()");
 }
-
 
 function preDeleteMultiple() {
     var selectedCms = getSelectedCms();
@@ -95,7 +95,7 @@ function preDeleteMultiple() {
                     sendBulkAction(a.closest('form').get(0), 'submitBulkdeletecms');
                 } else {
                     // no se pude eliminar, mostrar errror
-                    showError("No se puede eliminar el CMS porque stá protegido por WebImpacto GDPR");
+                    showError("No se puede eliminar el CMS porque está protegido por WebImpacto GDPR");
                 }
             }
         },
@@ -105,7 +105,6 @@ function preDeleteMultiple() {
         }
     });
 }
-
 
 /**
  * Sobreescribe el comportamiento de los botones que deshabilitan los CMS
@@ -138,8 +137,13 @@ function preDisableCms(a) {
                 // Se elimina (no está protegido por wimgdpr)
                 window.location.href = $(a).attr("elhref");
             } else {
-                // no se pude eliminar, mostrar errror
-                showError("No se puede ocultar el CMS porque stá protegido por WebImpacto GDPR");
+                if (($(a).find(".icon-check.hidden").length)) {
+                    // Se MUESTRA (está protegido por wimgdpr pero es indiferente)
+                    window.location.href = $(a).attr("elhref");
+                } else {
+                    // no se pude eliminar, mostrar errror
+                    showError("No se puede ocultar el CMS porque está protegido por WebImpacto GDPR");
+                }
             }
         },
         error: function () {
@@ -149,6 +153,42 @@ function preDisableCms(a) {
     });
     event.stopPropagation();
     event.preventDefault();
+}
+
+function overrideBulkDisableCmsButton() {
+    var a = $(".bulk-actions").find(".icon-power-off.text-danger").parent();
+    a.attr("elonclick", a.attr("onclick"));
+    a.attr("onclick", "preDisableMultiple()");
+}
+
+function preDisableMultiple() {
+    var selectedCms = getSelectedCms();
+
+    $.ajax({
+        type: 'POST',
+        url: '../modules/wim_gdpr/ajax.php',
+        data: {
+            action: "canDeleteCms",
+            cms: selectedCms
+        },
+        dataType: 'json',
+        success: function (json) {
+            // Obtener el mensaje de confirmación
+            var a = $(".bulk-actions").find(".icon-power-off.text-danger").parent();
+            if (json["result"] == "true") {
+                // Se elimina (no está protegido por wimgdpr)
+                sendBulkAction(a.closest('form').get(0), 'submitBulkdisableSelectioncms');
+            } else {
+                // no se pude eliminar, mostrar errror
+                showError("No se puede ocultar el CMS porque está protegido por WebImpacto GDPR");
+            }
+
+        },
+        error: function () {
+            // error en el servidor
+            showError("Ha ocurrido un error inesperado en el servidor.");
+        }
+    });
 }
 
 /**
