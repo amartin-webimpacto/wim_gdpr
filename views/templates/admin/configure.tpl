@@ -51,19 +51,6 @@
             </table>
         {/foreach}
 
-        {*<p>
-            {foreach $gdpr_list as $shop}
-                <span style="font-weight:bold; margin-left:20px">{$shop.id} - {$shop.name}</span>
-                <br/>
-                {foreach $shop.cms as $cms}
-                    <span style="margin-left:40px">{$cms.id} - {$cms.meta_title}</span>
-                    <input value="{$cms.id}" parent="{$shop.id}" type="checkbox"
-                           {if $cms.checked==1}checked="checked"{/if} />
-                    <br/>
-                {/foreach}
-            {/foreach}
-        </p>*}
-
         <input type="hidden" name="submitWim_gdprModule" value="1">
 
         <div class="panel-footer">
@@ -74,3 +61,6 @@
         </div>
     </form>
 </div>
+<script>
+    trSelectCheckbox();
+</script>

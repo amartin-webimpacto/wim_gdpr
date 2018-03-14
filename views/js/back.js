@@ -25,7 +25,6 @@
  * Don't forget to prefix your containers with your own identifier
  * to avoid any conflicts with others containers.
  */
-
 function generateJSON() {
     var myarray = [];
     $("#module_form").find(":checkbox:checked").each(function (index, elem) {
@@ -48,7 +47,20 @@ function generateJSON() {
     return json;
 }
 
+/**
+ * Hace que se seleccione el checkbox al hacer clic en cualquier elemento del tr
+ */
+function trSelectCheckbox() {
+    $('#module_form tr').click(function (event) {
+        if (event.target.type !== 'checkbox') {
+            $(':checkbox', this).trigger('click');
+        }
+    });
+}
 
+/**
+ * Envía el formulario de configuracion del modulo.
+ */
 function submitForm() {
     var json = generateJSON();
     var form = $("#module_form");
@@ -58,7 +70,6 @@ function submitForm() {
         type: "hidden"
     }).val(json);
     form.append(hiddenInput);
-
     //form.submit()
 }
 function showError(mensaje) {
