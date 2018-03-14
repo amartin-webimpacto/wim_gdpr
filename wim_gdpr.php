@@ -217,6 +217,12 @@ class Wim_gdpr extends Module
      */
     public function hookBackOfficeHeader()
     {
+        // Si está en el listado de CMS:
+        if (Tools::getValue('controller') == "AdminCmsContent" && !Tools::getValue('id_cms')) {
+            $this->context->controller->addJquery();
+            $this->context->controller->addJS($this->_path . 'views/js/cms_list.js');
+        }
+
         if (Tools::getValue('module_name') == $this->name) {
             $this->context->smarty->assign('gdpr_list', $this->getGDPRList());
             $this->context->controller->addJS($this->_path . 'views/js/back.js');
@@ -281,7 +287,28 @@ class Wim_gdpr extends Module
 
     public function hookActionObjectCmsDeleteBefore($params)
     {
-        //ddd($params['object']);
+        /*if ($this->isCMSProtected((int)Tools::getValue('id_cms'))) {
+            $cmsTitle = $params["object"]->meta_title[$this->context->language->id]; // titulo en el idioma actual
+            $this->errors[] = Tools::displayError('El CMS ' . $cmsTitle . 'está protegido por WebImpacto GDPR y no se puede eliminar.');
+            return false;
+        }
+
+        die("EOF");
+        */
+        /*
+        ddd($params['object']);
+        // Delete CMS: No se puede eliminar un CMS protegido
+        if (Tools::isSubmit('deletecms') && $this->isCMSProtected((int)Tools::getValue('id_cms'))) {
+            $this->errors[] = Tools::displayError('El CMS está protegido por WebImpacto GDPR y no se puede eliminar.');
+            return false;
+        }
+
+        // Delete Multiple CMS: No se puede eliminar un CMS protegido
+        if (Tools::isSubmit('submitBulkdeletecms') && (!$this->canDeleteMultipleCMS($this->boxes))) {
+            $this->errors[] = Tools::displayError('Alguno de los CMS seleccionados está protegido por WebImpacto GDPR y no se puede eliminar. Ninguna acción se ha llevado a cabo.');
+            return false;
+        }
+        */
     }
 
     public function hookActionObjectCmsUpdateBefore($params)
@@ -292,7 +319,7 @@ class Wim_gdpr extends Module
             $languageList = LanguageCore::getLanguages();
             if (count($languageList) > 0) {
                 foreach ($languageList as $language) {
-                    if (!$this->AreCmsEquals(Tools::getValue('id_cms'), $language["id_lang"])) { // Cuando son identicos no se actualiza.
+                    if (!$this->areCmsEquals(Tools::getValue('id_cms'), $language["id_lang"])) { // Cuando son identicos no se actualiza.
                         if (strlen(Tools::getValue('modification_reason_for_a_new_' . $language["id_lang"])) < 1) {
                             $this->context->controller->errors[] = Tools::displayError('Debe indicar el motivo de la modificación de este CMS.');
                         }
@@ -309,12 +336,12 @@ class Wim_gdpr extends Module
                 $this->context->controller->errors[] = Tools::displayError('El CMS está protegido por WebImpacto GDPR y debe estar activo.');
             }
             if (count($this->context->controller->errors) > 0) {
-                
+
                 /*
                 $this->context->controller->errors[] = $this->l('Custom Error');
                 $errors[] = $this->l('Custom Error');
 
-                error_log("------ UPDATE BEFORE");
+
                 $this->smarty->assign('languageList', "languageList");
 
                 return $this->display = 'edit_page';
@@ -335,7 +362,9 @@ class Wim_gdpr extends Module
             }
         }
         // Delete CMS: No se puede eliminar un CMS protegido
-        if (Tools::isSubmit('deletecms') && $this->isCMSProtected((int)Tools::getValue('id_cms'))) {
+        /*
+         * Este bloque de codigo debería ir en el hook deletebefore
+         if (Tools::isSubmit('deletecms') && $this->isCMSProtected((int)Tools::getValue('id_cms'))) {
             $this->context->controller->errors[] = Tools::displayError('El CMS está protegido por WebImpacto GDPR y no se puede eliminar.');
             return false;
         }
@@ -345,13 +374,14 @@ class Wim_gdpr extends Module
             $this->context->controller->errors[] = Tools::displayError('Alguno de los CMS seleccionados está protegido por WebImpacto GDPR y no se puede eliminar. Ninguna acción se ha llevado a cabo.');
             return false;
         }
+        */
 
         // Insert wim_gdpr_cms_versions
         if ((Tools::isSubmit('submitAddcms') || Tools::isSubmit('submitAddcmsAndPreview')) && $this->isCMSProtected((int)Tools::getValue('id_cms'))) {
             $languageList = LanguageCore::getLanguages();
             if (count($languageList) > 0) {
                 foreach ($languageList as $language) {
-                    if (!$this->AreCmsEquals(Tools::getValue('id_cms'), $language["id_lang"])) { // Cuando son identicos no se actualiza.
+                    if (!$this->areCmsEquals(Tools::getValue('id_cms'), $language["id_lang"])) { // Cuando son identicos no se actualiza.
                         $newCms = array(
                             'id_cms' => Tools::getValue('id_cms'),
                             'id_shop' => Tools::getValue('id_shop'),
@@ -427,8 +457,11 @@ class Wim_gdpr extends Module
      * @return bool
      * Comprueba si un cms esta controlado en el json de configuracion
      */
-    public function isCMSProtected($cms_id)
+    public function isCMSProtected($cms_id = "")
     {
+        if ($cms_id == "") {
+            return false;
+        };
         $json = json_decode(Configuration::get('WIM_GDPR_CMS_LIST'));
 
         foreach ($json->shop as $object) {
@@ -647,14 +680,23 @@ class Wim_gdpr extends Module
      */
     public function canDeleteMultipleCMS($cmsList)
     {
-        foreach ($cmsList as $cms) {
-            if ($this->isCMSProtected($cms)) {
+        foreach ($cmsList as $id_cms) {
+            if (!$this->canDeleteCMS($id_cms)) {
                 return false;
             }
         }
 
         return true;
     }
+
+    public function canDeleteCMS($id_cms)
+    {
+        if (Wim_gdpr::isCMSProtected($id_cms)) {
+            return false;
+        }
+        return true;
+    }
+
 
     /**
      * @param $id_cms
@@ -663,7 +705,7 @@ class Wim_gdpr extends Module
      * Esta funcion se debe llamar sólo al añadir/editar un CMS.
      * Comparará el CMS antes de editarse con el CMS que quedaría después de editarse y devolverá el resultado.
      */
-    public function AreCmsEquals($id_cms, $id_lang)
+    public function areCmsEquals($id_cms, $id_lang)
     {
         // Get old CMS
         $sql = 'SELECT `meta_title`, `meta_description`, `meta_keywords`, `content`, `link_rewrite`

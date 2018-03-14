@@ -18,8 +18,27 @@ switch (Tools::getValue('action')) {
         $cmsVersion = Wim_gdpr::getCmsVersion(Tools::getValue("id_gdpr_cms_version"));
         die($cmsVersion["new_content"]);
         break;
+    case 'canDeleteCms' :
+        canDeleteCms(Tools::getValue("cms"));
+        break;
 
     default:
         exit;
 }
 exit;
+
+function canDeleteCms($cms)
+{
+    if (is_array($cms)) {
+        error_log("------------------ ES ARRAY");
+        if (!Wim_gdpr::canDeleteMultipleCMS($cms)) {
+            error_log("------------------ NO PUEDE ELIMINARLO");
+            die(Tools::jsonEncode(array('result' => "false")));
+        }
+    } else {
+        if (!Wim_gdpr::canDeleteCMS($cms)) {
+            die(Tools::jsonEncode(array('result' => "false")));
+        }
+    }
+    die(Tools::jsonEncode(array('result' => "true")));
+}
