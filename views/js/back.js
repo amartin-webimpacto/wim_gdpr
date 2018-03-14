@@ -61,3 +61,64 @@ function submitForm() {
 
     //form.submit()
 }
+function showError(mensaje) {
+    var container = $("<div>").addClass("bootstrap");
+    var divMsg = $("<div>").addClass("alert alert-danger").html(mensaje);
+    var buttonClose = $("<button>").attr({
+        type: "button",
+        "data-dismiss": "alert"
+    }).addClass("close").text("×")
+    divMsg.append(buttonClose);
+    container.append(divMsg);
+
+    $(container).insertAfter("#content>.bootstrap:eq(0)");
+
+}
+
+$(document).ready(function(){
+    $(function() {
+
+        $('#cms_form button[type="submit"]').on('click', function(e){
+            e.preventDefault();
+
+            var pagContent = $('.mce-tinymce.mce-container.mce-panel iframe');
+            pagContent.each(function( index ) {
+                var pagContent = $('textarea.rte');
+                pagContent.each(function( index ) {
+                    var selectorLang = $(this).attr('id');
+                    $(this).text(tinyMCE.get(selectorLang).getContent());
+
+                });
+            });
+            var dataForm =  $('#cms_form').serialize();
+
+            $.ajax({
+                type: 'POST',
+                headers: { "cache-control": "no-cache" },
+                url: url + 'modules/wim_gdpr/ajax.php' + '?rand=' + new Date().getTime(),
+                data: {
+                    action: "validationForm",
+                    data: dataForm
+                },
+                dataType: 'json',
+                async: true,
+                success: function (jsonData)
+                {
+                    $('.alert.alert-danger').remove();
+                    if (typeof jsonData !== 'undefined' && jsonData.length > 0)
+                    {
+                        jsonData.forEach(function(error, index) {
+                            showError(error );
+                        });
+
+                        $("html, body").animate({scrollTop:0}, 500);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown)
+                {
+                    console.log(data);
+                }
+            });
+        });
+    });
+});

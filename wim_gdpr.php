@@ -103,7 +103,7 @@ class Wim_gdpr extends Module
 
         $this->context->smarty->assign('module_dir', $this->_path);
         $this->context->smarty->assign(array(
-            'token'  => Tools::getAdminTokenLite('AdminModules')
+            'token' => Tools::getAdminTokenLite('AdminModules'),
         ));
 
         $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
@@ -220,11 +220,15 @@ class Wim_gdpr extends Module
      */
     public function hookBackOfficeHeader()
     {
-        if (Tools::getValue('module_name') == $this->name) {
+        if (Tools::getValue('controller') == 'AdminCmsContent') {
+            if (method_exists($this->context->controller, 'addJquery')) {
+                $this->context->controller->addJquery();
+            }
             $this->context->smarty->assign('gdpr_list', $this->getGDPRList());
             $this->context->controller->addJS($this->_path . 'views/js/back.js');
             $this->context->controller->addCSS($this->_path . 'views/css/back.css');
         }
+
     }
 
 
@@ -312,7 +316,7 @@ class Wim_gdpr extends Module
                 $this->context->controller->errors[] = Tools::displayError('El CMS está protegido por WebImpacto GDPR y debe estar activo.');
             }
             if (count($this->context->controller->errors) > 0) {
-                
+
                 /*
                 $this->context->controller->errors[] = $this->l('Custom Error');
                 $errors[] = $this->l('Custom Error');
@@ -662,11 +666,12 @@ class Wim_gdpr extends Module
     /**
      * @param $id_cms
      * @param $id_lang
+     * @param $outputForm //data serialize form (validation)
      * @return bool
      * Esta funcion se debe llamar sólo al añadir/editar un CMS.
      * Comparará el CMS antes de editarse con el CMS que quedaría después de editarse y devolverá el resultado.
      */
-    public function AreCmsEquals($id_cms, $id_lang)
+    public function AreCmsEquals($id_cms, $id_lang, $outputForm = null)
     {
         // Get old CMS
         $sql = 'SELECT `meta_title`, `meta_description`, `meta_keywords`, `content`, `link_rewrite`
@@ -676,16 +681,28 @@ class Wim_gdpr extends Module
                 AND `id_shop` = ' . Context::getContext()->shop->id;
         if ($old_cms = Db::getInstance()->getRow($sql)) {
             // Get new CMS
-            $new_cms = array(
-                'meta_title' => Tools::getValue('meta_title_' . $id_lang),
-                'meta_description' => Tools::getValue('meta_description_' . $id_lang),
-                'meta_keywords' => Tools::getValue('meta_keywords_' . $id_lang),
-                'content' => Tools::getValue('content_' . $id_lang),
-                'link_rewrite' => Tools::getValue('link_rewrite_' . $id_lang),
-            );
 
+            if(!empty($outputForm)){
+
+                //$old_cms['content'] =  str_replace("[\n|\r|\n\r|\t|\0|\x0B]", "",$old_cms['content']);
+                $new_cms = array(
+                    'meta_title' => $outputForm['meta_title_'.$id_lang],
+                    'meta_description' => $outputForm['meta_description_'.$id_lang],
+                    'meta_keywords' =>  $outputForm['meta_keywords_'.$id_lang],
+                    'content' => $outputForm['content_'.$id_lang],
+                    'link_rewrite' => $outputForm['link_rewrite_'.$id_lang],
+                );
+            }else{
+                $new_cms = array(
+                    'meta_title' => Tools::getValue('meta_title_' . $id_lang),
+                    'meta_description' => Tools::getValue('meta_description_' . $id_lang),
+                    'meta_keywords' => Tools::getValue('meta_keywords_' . $id_lang),
+                    'content' => Tools::getValue('content_' . $id_lang),
+                    'link_rewrite' => Tools::getValue('link_rewrite_' . $id_lang),
+                );
+            }
             // Compare
-            if ($old_cms == $new_cms) {// No se realiza comparación binaria por si los tipos de datos fueran distintos
+            if ($old_cms['content'] == $new_cms['content']) {// No se realiza comparación binaria por si los tipos de datos fueran distintos
                 return true;
             } else {
                 return false;
@@ -716,8 +733,32 @@ class Wim_gdpr extends Module
             $languageList = LanguageCore::getLanguages();
             $this->smarty->assign('languageList', $languageList);
             $this->smarty->assign('show_to_users', $this->getCmsShowToUserValue(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms')));
+            $this->smarty->assign('url', __PS_BASE_URI__);
 
             return $this->display(__FILE__, 'views/templates/admin/cms_fields.tpl');
         }
     }
+
+    public function  validationForm($data)
+    {
+        $errors = array();
+        parse_str($data, $outputForm);
+
+        $langs = LanguageCore::getLanguages();
+
+        foreach ($langs as $input) {
+                if (!$this->AreCmsEquals($outputForm['id_cms'], $input['id_lang'], $outputForm)) {
+
+                    if ($outputForm['modification_reason_for_a_new_' . $input['id_lang']] == "") {
+                        $errors [] = Tools::displayError('Debe indicar el motivo de la modificación de este CMS para el idioma ' . $input['name'] . '.');
+                    }
+                 }
+        }
+
+        return $errors;
+
+
+    }
+
+
 }
