@@ -25,10 +25,9 @@
 
 <div class="panel">
     <h3>{l s='WebImpacto GDPR' mod='wim_gdpr'} General Data Protection Regulation</h3>
-
     <form id="module_form" class="defaultForm form-horizontal"
-          action="index.php?controller=AdminModules&amp;configure=wim_gdpr&amp;tab_module=others&amp;module_name=wim_gdpr&amp;token=4b83d59f5250f9d1d2be63f09ed0aeff"
-          method="post" enctype="multipart/form-data" novalidate="">
+          action="index.php?controller=AdminModules&amp;configure=wim_gdpr&amp;tab_module=others&amp;module_name=wim_gdpr&amp;token={$token}"
+          method="post" enctype="multipart/form-data" novalidate>
 
         {foreach $gdpr_list as $shop}
             <table class="table table-striped table-nonfluid">

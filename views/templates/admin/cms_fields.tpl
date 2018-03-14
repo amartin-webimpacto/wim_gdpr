@@ -1,5 +1,4 @@
 <!-- MOTIVO -->
-
 <div class="form-group">
     <label class="control-label col-lg-3 required">
         <span class="label-tooltip" data-toggle="tooltip" data-html="true" title=""
@@ -14,7 +13,7 @@
             <div class="translatable-field lang-{$language.id_lang}" {if !$smarty.foreach.language.first}style="display: none;"{/if}>
                 <div class="col-lg-9">
                     <input type="text" id="modification_reason_for_a_new_{$language.id_lang}" name="modification_reason_for_a_new_{$language.id_lang}"
-                           class="" value="" required="required">
+                           class="modification_reason_for_a_new"  required="required">
                 </div>
                 <div class="col-lg-2">
                     <button type="button" class="btn btn-default dropdown-toggle" tabindex="-1" data-toggle="dropdown">
@@ -49,3 +48,6 @@
     </div>
 </div>
 <!-- FIN SHOW TO USERS -->
+<script type="text/javascript">
+    var url = '{$url}';
+</script>
