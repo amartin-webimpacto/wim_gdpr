@@ -25,53 +25,7 @@
  * Don't forget to prefix your containers with your own identifier
  * to avoid any conflicts with others containers.
  */
-function generateJSON() {
-    var myarray = [];
-    $("#module_form").find(":checkbox:checked").each(function (index, elem) {
-        var shop_id = $(elem).attr("parent");
-        var cms_id = $(elem).val();
 
-        if (typeof myarray[shop_id] === 'undefined') { // Si no existe
-            myarray[shop_id] = [];
-        }
-        myarray[shop_id].push(cms_id);
-    });
-
-    var shop = {};
-    myarray.forEach(function (cmsList, shop_id) {
-        shop[shop_id] = {cms: cmsList};
-    });
-
-    var json = JSON.stringify({shop});
-
-    return json;
-}
-
-/**
- * Hace que se seleccione el checkbox al hacer clic en cualquier elemento del tr
- */
-function trSelectCheckbox() {
-    $('#module_form tr').click(function (event) {
-        if (event.target.type !== 'checkbox') {
-            $(':checkbox', this).trigger('click');
-        }
-    });
-}
-
-/**
- * Envía el formulario de configuracion del modulo.
- */
-function submitForm() {
-    var json = generateJSON();
-    var form = $("#module_form");
-    var hiddenInput = $("input").attr({
-        id: "WIM_GDPR_CMS_LIST",
-        name: "WIM_GDPR_CMS_LIST",
-        type: "hidden"
-    }).val(json);
-    form.append(hiddenInput);
-    //form.submit()
-}
 function showError(mensaje) {
     var container = $("<div>").addClass("bootstrap");
     var divMsg = $("<div>").addClass("alert alert-danger").html(mensaje);
@@ -86,26 +40,26 @@ function showError(mensaje) {
 
 }
 
-$(document).ready(function(){
-    $(function() {
+$(document).ready(function () {
+    $(function () {
 
-        $('#cms_form button[type="submit"]').on('click', function(e){
+        $('#cms_form button[type="submit"]').on('click', function (e) {
             e.preventDefault();
 
             var pagContent = $('.mce-tinymce.mce-container.mce-panel iframe');
-            pagContent.each(function( index ) {
+            pagContent.each(function (index) {
                 var pagContent = $('textarea.rte');
-                pagContent.each(function( index ) {
+                pagContent.each(function (index) {
                     var selectorLang = $(this).attr('id');
                     $(this).text(tinyMCE.get(selectorLang).getContent());
 
                 });
             });
-            var dataForm =  $('#cms_form').serialize();
+            var dataForm = $('#cms_form').serialize();
 
             $.ajax({
                 type: 'POST',
-                headers: { "cache-control": "no-cache" },
+                headers: {"cache-control": "no-cache"},
                 url: url + 'modules/wim_gdpr/ajax.php' + '?rand=' + new Date().getTime(),
                 data: {
                     action: "validationForm",
@@ -113,20 +67,17 @@ $(document).ready(function(){
                 },
                 dataType: 'json',
                 async: true,
-                success: function (jsonData)
-                {
+                success: function (jsonData) {
                     $('.alert.alert-danger').remove();
-                    if (typeof jsonData !== 'undefined' && jsonData.length > 0)
-                    {
-                        jsonData.forEach(function(error, index) {
-                            showError(error );
+                    if (typeof jsonData !== 'undefined' && jsonData.length > 0) {
+                        jsonData.forEach(function (error, index) {
+                            showError(error);
                         });
 
-                        $("html, body").animate({scrollTop:0}, 500);
+                        $("html, body").animate({scrollTop: 0}, 500);
                     }
                 },
-                error: function (XMLHttpRequest, textStatus, errorThrown)
-                {
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
                     console.log(data);
                 }
             });

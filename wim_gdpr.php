@@ -70,13 +70,6 @@ class Wim_gdpr extends Module
         $this->registerHook('header') &&
         $this->registerHook('backOfficeHeader') &&
         $this->registerHook('displayHeader') &&
-        $this->registerHook('actionObjectCmsAddBefore') &&
-        $this->registerHook('actionObjectCmsAddAfter') &&
-        $this->registerHook('actionObjectCmsUpdateBefore') &&
-        $this->registerHook('actionObjectCmsUpdateAfter') &&
-        $this->registerHook('actionObjectCmsDeleteBefore') &&
-        //$this->registerHook('actionObjectCmsAddBefore') &&
-        $this->registerHook('actionObjectCmsDeleteAfter') &&
         $this->registerHook('displayAdminForm');
     }
 
@@ -108,90 +101,9 @@ class Wim_gdpr extends Module
 
         $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
 
-        return $output . $this->renderForm();
+        return $output;
     }
 
-    /**
-     * Create the form that will be displayed in the configuration of your module.
-     */
-    protected function renderForm()
-    {
-        return false;
-        $helper = new HelperForm();
-
-        $helper->show_toolbar = false;
-        $helper->table = $this->table;
-        $helper->module = $this;
-        $helper->default_form_language = $this->context->language->id;
-        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
-
-        $helper->identifier = $this->identifier;
-        $helper->submit_action = 'submitWim_gdprModule';
-        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
-            . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
-        $helper->token = Tools::getAdminTokenLite('AdminModules');
-
-        $helper->tpl_vars = array(
-            'fields_value' => $this->getConfigFormValues(), /* Add values for your inputs */
-            'languages' => $this->context->controller->getLanguages(),
-            'id_language' => $this->context->language->id,
-        );
-
-        // return $helper->generateForm(array($this->getConfigForm()));
-    }
-
-
-    /**
-     * Create the structure of your form.
-     */
-    protected function getConfigForm()
-    {
-        /* return array(
-             'form' => array(
-                 'legend' => array(
-                     'title' => $this->l('Settings'),
-                     'icon' => 'icon-cogs',
-                 ),
-                 'input' => array(
-                     array(
-                         'type' => 'switch',
-                         'label' => $this->l('Live mode'),
-                         'name' => 'WIM_GDPR_LIVE_MODE',
-                         'is_bool' => true,
-                         'desc' => $this->l('Use this module in live mode'),
-                         'values' => array(
-                             array(
-                                 'id' => 'active_on',
-                                 'value' => true,
-                                 'label' => $this->l('Enabled')
-                             ),
-                             array(
-                                 'id' => 'active_off',
-                                 'value' => false,
-                                 'label' => $this->l('Disabled')
-                             )
-                         ),
-                     ),
-                     array(
-                         'col' => 3,
-                         'type' => 'text',
-                         'prefix' => '<i class="icon icon-envelope"></i>',
-                         'desc' => $this->l('Enter a valid email address'),
-                         'name' => 'WIM_GDPR_ACCOUNT_EMAIL',
-                         'label' => $this->l('Email'),
-                     ),
-                     array(
-                         'type' => 'password',
-                         'name' => 'WIM_GDPR_ACCOUNT_PASSWORD',
-                         'label' => $this->l('Password'),
-                     ),
-                 ),
-                 'submit' => array(
-                     'title' => $this->l('Save'),
-                 ),
-             ),
-         );*/
-    }
 
     /**
      * Set values for the inputs.
@@ -225,13 +137,17 @@ class Wim_gdpr extends Module
             $this->context->controller->addJquery();
             $this->context->controller->addJS($this->_path . 'views/js/cms_list.js');
         }
-
+        // Si está editando un CMS:
+        if (Tools::getValue('controller') == "AdminCmsContent" && Tools::getValue('id_cms')) {
+            $this->context->controller->addJquery();
+            $this->context->controller->addJS($this->_path . 'views/js/back.js');
+        }
+        // Si está en la configuración del módulo:
         if (Tools::getValue('module_name') == $this->name) {
             $this->context->smarty->assign('gdpr_list', $this->getGDPRList());
-            $this->context->controller->addJS($this->_path . 'views/js/back.js');
+            $this->context->controller->addJS($this->_path . 'views/js/module_admin.js');
             $this->context->controller->addCSS($this->_path . 'views/css/back.css');
         }
-
     }
 
 
@@ -283,37 +199,6 @@ class Wim_gdpr extends Module
         $this->context->controller->addCSS($this->_path . '/views/css/front.css');
     }
 
-    public function hookActionObjectCmsAddBefore($params)
-    {
-        //ddd($params['object']);
-    }
-
-
-    public function hookActionObjectCmsDeleteBefore($params)
-    {
-        /*if ($this->isCMSProtected((int)Tools::getValue('id_cms'))) {
-            $cmsTitle = $params["object"]->meta_title[$this->context->language->id]; // titulo en el idioma actual
-            $this->errors[] = Tools::displayError('El CMS ' . $cmsTitle . 'está protegido por WebImpacto GDPR y no se puede eliminar.');
-            return false;
-        }
-
-        die("EOF");
-        */
-        /*
-        ddd($params['object']);
-        // Delete CMS: No se puede eliminar un CMS protegido
-        if (Tools::isSubmit('deletecms') && $this->isCMSProtected((int)Tools::getValue('id_cms'))) {
-            $this->errors[] = Tools::displayError('El CMS está protegido por WebImpacto GDPR y no se puede eliminar.');
-            return false;
-        }
-
-        // Delete Multiple CMS: No se puede eliminar un CMS protegido
-        if (Tools::isSubmit('submitBulkdeletecms') && (!$this->canDeleteMultipleCMS($this->boxes))) {
-            $this->errors[] = Tools::displayError('Alguno de los CMS seleccionados está protegido por WebImpacto GDPR y no se puede eliminar. Ninguna acción se ha llevado a cabo.');
-            return false;
-        }
-        */
-    }
 
     public function hookActionObjectCmsUpdateBefore($params)
     {
@@ -412,6 +297,10 @@ class Wim_gdpr extends Module
     }
 
 
+    /**
+     * Muestra al usuario el popup para aceptar los cambios en los CMS si corresponde
+     * @return mixed
+     */
     public function hookDisplayHeader()
     {
         $cmsToAccept = $this->getCmsToShowToUser();
@@ -623,7 +512,6 @@ class Wim_gdpr extends Module
      * A partir de un listado de cms protegidos, se obtiene la última actualización en la tabla "wim_gdpr_cms_versions"
      * para cada cms y comprueba si se deben mostrar o no al usuario:
      * if "wim_gdpr_cms_versions.show_to_users" == 1 || "wim_gdpr_cms_versions.show_to_users" == 2
-     *
      */
     public function getCmsToShowToUser()
     {
@@ -721,17 +609,17 @@ class Wim_gdpr extends Module
         if ($old_cms = Db::getInstance()->getRow($sql)) {
             // Get new CMS
 
-            if(!empty($outputForm)){
+            if (!empty($outputForm)) {
 
                 //$old_cms['content'] =  str_replace("[\n|\r|\n\r|\t|\0|\x0B]", "",$old_cms['content']);
                 $new_cms = array(
-                    'meta_title' => $outputForm['meta_title_'.$id_lang],
-                    'meta_description' => $outputForm['meta_description_'.$id_lang],
-                    'meta_keywords' =>  $outputForm['meta_keywords_'.$id_lang],
-                    'content' => $outputForm['content_'.$id_lang],
-                    'link_rewrite' => $outputForm['link_rewrite_'.$id_lang],
+                    'meta_title' => $outputForm['meta_title_' . $id_lang],
+                    'meta_description' => $outputForm['meta_description_' . $id_lang],
+                    'meta_keywords' => $outputForm['meta_keywords_' . $id_lang],
+                    'content' => $outputForm['content_' . $id_lang],
+                    'link_rewrite' => $outputForm['link_rewrite_' . $id_lang],
                 );
-            }else{
+            } else {
                 $new_cms = array(
                     'meta_title' => Tools::getValue('meta_title_' . $id_lang),
                     'meta_description' => Tools::getValue('meta_description_' . $id_lang),
@@ -786,18 +674,14 @@ class Wim_gdpr extends Module
         $langs = LanguageCore::getLanguages();
 
         foreach ($langs as $input) {
-                if (!$this->AreCmsEquals($outputForm['id_cms'], $input['id_lang'], $outputForm)) {
+            if (!$this->AreCmsEquals($outputForm['id_cms'], $input['id_lang'], $outputForm)) {
 
-                    if ($outputForm['modification_reason_for_a_new_' . $input['id_lang']] == "") {
-                        $errors [] = Tools::displayError('Debe indicar el motivo de la modificación de este CMS para el idioma ' . $input['name'] . '.');
-                    }
-                 }
+                if ($outputForm['modification_reason_for_a_new_' . $input['id_lang']] == "") {
+                    $errors [] = Tools::displayError('Debe indicar el motivo de la modificación de este CMS para el idioma ' . $input['name'] . '.');
+                }
+            }
         }
 
         return $errors;
-
-
     }
-
-
 }
