@@ -205,7 +205,8 @@ function showError(mensaje) {
     divMsg.append(buttonClose);
     container.append(divMsg);
 
-    $(container).insertAfter("#content>.bootstrap:eq(0)")
+    $(container).insertAfter("#content>.bootstrap:eq(0)");
+    $("html, body").animate({scrollTop: 0}, 500);
 }
 
 /**
