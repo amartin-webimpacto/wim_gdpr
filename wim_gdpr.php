@@ -665,4 +665,13 @@ class Wim_gdpr extends Module
             }
         }
     }
+
+    public function  getCMSshop($id_cms){
+        $sql = '
+			SELECT *
+			FROM `' . _DB_PREFIX_ . 'cms_shop`
+			WHERE `id_cms` = ' . (int)$id_cms;
+
+        return Db::getInstance()->ExecuteS($sql);
+    }
 }
