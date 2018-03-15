@@ -200,73 +200,10 @@ class Wim_gdpr extends Module
     }
 
 
-    public function hookActionObjectCmsUpdateBefore($params)
+    public function hookActionObjectCmsUpdateBefore()
     {
-        // Update CMS
-        if ((Tools::isSubmit('submitAddcms') || Tools::isSubmit('submitAddcmsAndPreview')) && $this->isCMSProtected((int)Tools::getValue('id_cms'))) {
-            // Si el CMS esta protegido, se debe insertar un motivo para su actualizacion.
-            $languageList = LanguageCore::getLanguages();
-            if (count($languageList) > 0) {
-                foreach ($languageList as $language) {
-                    if (!$this->areCmsEquals(Tools::getValue('id_cms'), $language["id_lang"])) { // Cuando son identicos no se actualiza.
-                        if (strlen(Tools::getValue('modification_reason_for_a_new_' . $language["id_lang"])) < 1) {
-                            $this->context->controller->errors[] = Tools::displayError('Debe indicar el motivo de la modificación de este CMS.');
-                        }
-                    }
-                }
-            }
-
-            if ($this->isDeletingShops((int)Tools::getValue('id_cms'))) {
-                $this->context->controller->errors[] = Tools::displayError('El CMS está protegido por WebImpacto GDPR y no se puede desasociar de una tienda.');
-            }
-
-            // Si el CMS esta protegido, siempre debe estar activo.
-            if (Tools::getValue('active') == 0) {
-                $this->context->controller->errors[] = Tools::displayError('El CMS está protegido por WebImpacto GDPR y debe estar activo.');
-            }
-            if (count($this->context->controller->errors) > 0) {
-
-                /*
-                $this->context->controller->errors[] = $this->l('Custom Error');
-                $errors[] = $this->l('Custom Error');
-
-
-                $this->smarty->assign('languageList', "languageList");
-
-                return $this->display = 'edit_page';
-                (__FILE__, 'views/templates/admin/cms_fields.tpl');
-                die($this->context->controller->display(__FILE__, 'edit_page'));
-                die($this->display(__FILE__, 'edit_page'));
-                throw new PrestaShopException('ESTE ES MI ERROR PERSONALIZADO');
-                $this->errors[] "asdf"; // ERROR
-                return $this->context->controller->display(__FILE__, 'edit_page');
-                return $this->display = 'edit_page';
-
-                return $this->context->controller->errors;
-                ddd($this->context->controller->errors);
-                return $this->context->controller->display(__FILE__, 'edit_page');
-                throw new PrestaShopException('ESTE ES MI ERROR PERSONALIZADO');
-                return false;
-                */
-            }
-        }
-        // Delete CMS: No se puede eliminar un CMS protegido
-        /*
-         * Este bloque de codigo debería ir en el hook deletebefore
-         if (Tools::isSubmit('deletecms') && $this->isCMSProtected((int)Tools::getValue('id_cms'))) {
-            $this->context->controller->errors[] = Tools::displayError('El CMS está protegido por WebImpacto GDPR y no se puede eliminar.');
-            return false;
-        }
-
-        // Delete Multiple CMS: No se puede eliminar un CMS protegido
-        if (Tools::isSubmit('submitBulkdeletecms') && (!$this->canDeleteMultipleCMS($this->boxes))) {
-            $this->context->controller->errors[] = Tools::displayError('Alguno de los CMS seleccionados está protegido por WebImpacto GDPR y no se puede eliminar. Ninguna acción se ha llevado a cabo.');
-            return false;
-        }
-        */
-
-        // Insert wim_gdpr_cms_versions
-        if ((Tools::isSubmit('submitAddcms') || Tools::isSubmit('submitAddcmsAndPreview')) && $this->isCMSProtected((int)Tools::getValue('id_cms'))) {
+        // Tras la validación realizada por AJAX, aquí sólo nos queda comprobar si el CMS está protegido. De ser así, se guardará su versión en BBDD.
+        if ($this->isCMSProtected((int)Tools::getValue('id_cms'))) {
             $languageList = LanguageCore::getLanguages();
             if (count($languageList) > 0) {
                 foreach ($languageList as $language) {
@@ -284,7 +221,7 @@ class Wim_gdpr extends Module
                             'modification_reason_for_a_new' => Tools::getValue('modification_reason_for_a_new_' . $language["id_lang"]),
                             'show_to_users' => Tools::getValue('show_to_users'),
                         );
-                        //($this->getFieldValue($this->object, 'id_cms'))
+
                         if (!$this->addWimGdprCmsVersions($newCms)) {
                             $this->errors[] = Tools::displayError('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.');
                             return false;
@@ -293,7 +230,6 @@ class Wim_gdpr extends Module
                 }
             }
         }
-
     }
 
 
@@ -534,16 +470,17 @@ class Wim_gdpr extends Module
                     WHERE id_customer = ' . $this->getCurrentCustomer() . '
                 );';
 
-        $rows = Db::getInstance()->ExecuteS($sql);
-        foreach ($rows as $row) {
-            $data[] = array(
-                "id_gdpr_cms_version" => $row["id_gdpr_cms_version"],
-                "id_cms" => $row["id_cms"],
-                "show_to_users" => $row["show_to_users"],
-                "content" => $row["new_content"],
-                "title" => $row["new_meta_title"],
-                "modification_reason_for_a_new" => $row["modification_reason_for_a_new"]
-            );
+        if ($rows = Db::getInstance()->ExecuteS($sql)) {
+            foreach ($rows as $row) {
+                $data[] = array(
+                    "id_gdpr_cms_version" => $row["id_gdpr_cms_version"],
+                    "id_cms" => $row["id_cms"],
+                    "show_to_users" => $row["show_to_users"],
+                    "content" => $row["new_content"],
+                    "title" => $row["new_meta_title"],
+                    "modification_reason_for_a_new" => $row["modification_reason_for_a_new"]
+                );
+            }
         }
         return $data;
     }
@@ -683,5 +620,30 @@ class Wim_gdpr extends Module
         }
 
         return $errors;
+    }
+
+    /**
+     * Devuelve un historico de
+     * @param $cms_id
+     * @throws PrestaShopDatabaseException
+     */
+    public function getCmsVersionHistory($cms_id)
+    {
+        $lang_id = $this->context->language->id;
+        $shop_id = Context::getContext()->shop->id;
+
+        $sql = 'SELECT *
+        FROM `' . _DB_PREFIX_ . 'wim_gdpr_cms_versions`
+        WHERE `show_to_users` in(1,2)
+        AND `id_cms` = ' . (int)$cms_id . '
+        AND `id_shop` = ' . (int)$shop_id . '
+        AND `id_lang` = ' . (int)$lang_id . '
+        ORDER BY `date_add`, `id_gdpr_cms_version`;';
+
+        if ($results = Db::getInstance()->ExecuteS($sql)) {
+            foreach ($results as $row) {
+                echo $row['id_shop'] . ' :: ' . $row['name'] . '<br />';
+            }
+        }
     }
 }
