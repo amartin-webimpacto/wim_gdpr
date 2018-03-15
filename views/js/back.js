@@ -90,8 +90,8 @@ $(document).ready(function(){
     $(function() {
 
         $('#cms_form button[type="submit"]').on('click', function(e){
-            e.preventDefault();
 
+            // content texarea
             var pagContent = $('.mce-tinymce.mce-container.mce-panel iframe');
             pagContent.each(function( index ) {
                 var pagContent = $('textarea.rte');
@@ -101,7 +101,16 @@ $(document).ready(function(){
 
                 });
             });
-            var dataForm =  $('#cms_form').serialize();
+            //shop tree
+            var inputChecked = $('.panel .tree-folder input:checked');
+            var itemShopSelected = '';
+            inputChecked.each(function( index ) {
+                var id_shop = $(this).val();
+                itemShopSelected += '&itemShopSelected['+index+']='+id_shop+'&';
+            });
+
+            var dataForm_serialize =  $('#cms_form').serialize();
+            var dataForm = dataForm_serialize + itemShopSelected;
 
             $.ajax({
                 type: 'POST',
@@ -112,12 +121,13 @@ $(document).ready(function(){
                     data: dataForm
                 },
                 dataType: 'json',
-                async: true,
+                async: false,
                 success: function (jsonData)
                 {
-                    $('.alert.alert-danger').remove();
+                    $('.alert.alert-danger, .alert.alert-success').remove();
                     if (typeof jsonData !== 'undefined' && jsonData.length > 0)
                     {
+                        e.preventDefault();
                         jsonData.forEach(function(error, index) {
                             showError(error );
                         });

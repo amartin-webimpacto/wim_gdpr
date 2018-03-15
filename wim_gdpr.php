@@ -225,13 +225,19 @@ class Wim_gdpr extends Module
             $this->context->controller->addJquery();
             $this->context->controller->addJS($this->_path . 'views/js/cms_list.js');
         }
-
+        // Si está editando un CMS:
+        if (Tools::getValue('controller') == "AdminCmsContent" && Tools::getValue('id_cms')) {
+            $this->context->controller->addJquery();
+            if($this->isCMSProtected(Tools::getValue('id_cms'))){
+                $this->context->controller->addJS($this->_path . 'views/js/back.js');
+            }
+        }
+        // Si está en la configuración del módulo:
         if (Tools::getValue('module_name') == $this->name) {
             $this->context->smarty->assign('gdpr_list', $this->getGDPRList());
-            $this->context->controller->addJS($this->_path . 'views/js/back.js');
+            $this->context->controller->addJS($this->_path . 'views/js/module_admin.js');
             $this->context->controller->addCSS($this->_path . 'views/css/back.css');
         }
-
     }
 
 
@@ -778,25 +784,51 @@ class Wim_gdpr extends Module
         }
     }
 
+    /**
+     * Si existen errores en las validaciones establecidas devuelve mensaje de error correspondiente
+     * @param $data //formulario serializado
+     * @return array|bool|null|object
+     */
     public function  validationForm($data)
     {
         $errors = array();
         parse_str($data, $outputForm);
+        $cmsShops = $this->getCMSshop($outputForm['id_cms']);
 
         $langs = LanguageCore::getLanguages();
 
         foreach ($langs as $input) {
-                if (!$this->AreCmsEquals($outputForm['id_cms'], $input['id_lang'], $outputForm)) {
-
-                    if ($outputForm['modification_reason_for_a_new_' . $input['id_lang']] == "") {
-                        $errors [] = Tools::displayError('Debe indicar el motivo de la modificación de este CMS para el idioma ' . $input['name'] . '.');
-                    }
-                 }
+            if (!$this->AreCmsEquals($outputForm['id_cms'], $input['id_lang'], $outputForm)) {
+                if ($outputForm['modification_reason_for_a_new_' . $input['id_lang']] == "") {
+                    $errors [] = Tools::displayError('Debe indicar el motivo de la modificación de este CMS para el idioma ' . $input['name'] . '.');
+                }
+            }
         }
+
+        if($outputForm['active'] == 0 ){
+            $errors [] = Tools::displayError('El CMS que intenta desactivar, se encuentra protegido. Para poder desactivarlo tiene que anular dicha protección en el módulo correspondiente (WebImpacto GDPR)');
+        }
+
+
+        foreach ($cmsShops as $key=>$shop){
+            if(!in_array($shop['id_shop'], $outputForm['itemShopSelected'] )){
+                $errors [] = Tools::displayError('No pude desmarcar una tienda que ha sido marcada con contenido protegido (id_shop : '.$shop['id_shop'].')');
+            }
+        }
+
 
         return $errors;
 
 
+    }
+
+    public function  getCMSshop($id_cms){
+        $sql = '
+			SELECT *
+			FROM `' . _DB_PREFIX_ . 'cms_shop`
+			WHERE `id_cms` = ' . (int)$id_cms;
+
+        return Db::getInstance()->ExecuteS($sql);
     }
 
 
