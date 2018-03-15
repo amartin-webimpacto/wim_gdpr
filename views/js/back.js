@@ -64,7 +64,7 @@ $(document).ready(function () {
             });
 
             var dataForm_serialize =  $('#cms_form').serialize();
-            var dataForm = dataForm_serialize + itemShopSelected;
+            var dataForm = dataForm_serialize + itemShopSelected + 'current_id_shop='+current_id_shop;
 
             $.ajax({
                 type: 'POST',
