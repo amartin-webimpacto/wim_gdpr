@@ -24,7 +24,48 @@
 *}
 
 <div class="panel">
+    <h3>{l s='WebImpacto GDPR' mod='wim_gdpr'}: CONFIGURACIÓN ADICIONAL</h3>
+    Al instalar este módulo, hay que editar el template del CMS del tema en uso.
+    <br/>
+    - El fichero en cuestión se encuentra en la ruta <code>themes/[nombre-del-tema]/cms.tpl</code>
+    <br/>
+    - Justo encima del siguiente bloque de texto....
+    <br/>
+    <code>
+        {literal}
+            &lt;div class="rte{if $content_only} content_only{/if}">
+            <br/>
+                {$cms->content}
+            <br/>
+            &lt;/div>
+        {/literal}
+    </code>
+    <br/>
+    - Se debe añadir la siguiente línea:
+    <br/>
+    {literal}<code>{hook h='displayCMSHistory'}</code>{/literal}
+    <br/>
+    - Quedando algo parecido a:
+    <br/>
+    {literal}
+        <code>
+            {hook h='displayCMSHistory'}
+            <br/>
+            &lt;div class="rte{if $content_only} content_only{/if}">
+            <br/>
+                {$cms->content}
+            <br/>
+            &lt;/div>
+        </code>
+    {/literal}
+    <br/>
+    La ejecución de este hook mostrará el histórico de cambios del CMS en cuestión.
+
+</div>
+
+<div class="panel">
     <h3>{l s='WebImpacto GDPR' mod='wim_gdpr'} General Data Protection Regulation</h3>
+
     <form id="module_form" class="defaultForm form-horizontal"
           action="index.php?controller=AdminModules&amp;configure=wim_gdpr&amp;tab_module=others&amp;module_name=wim_gdpr&amp;token={$token}"
           method="post" enctype="multipart/form-data" novalidate>

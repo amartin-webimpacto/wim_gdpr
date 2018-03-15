@@ -24,6 +24,27 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
+
+/**
+ * IMPORTANTE!!
+ *
+ * CONFIGURACIÓN DEL MÓDULO:
+ * Al instalar este módulo, hay que editar el template del CMS del tema en uso.
+ * - El fichero en cuestión se encuentra en la ruta themes/[nombre-del-tema]/cms.tpl
+ * - Justo encima del siguiente bloque de texto....
+ * <div class="rte{if $content_only} content_only{/if}">
+ *      {$cms->content}
+ * </div>
+ * - Se debe añadir la siguiente línea:
+ * {hook h='displayCMSHistory'}
+ * - Quedando algo parecido a:
+ * {hook h='displayCMSHistory'}
+ * <div class="rte{if $content_only} content_only{/if}">
+ *      {$cms->content}
+ * </div>
+ *
+ * La ejecución de este hook mostrará el histórico de cambios del CMS en cuestión.
+ */
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -70,7 +91,8 @@ class Wim_gdpr extends Module
         $this->registerHook('header') &&
         $this->registerHook('backOfficeHeader') &&
         $this->registerHook('displayHeader') &&
-        $this->registerHook('displayAdminForm');
+        $this->registerHook('displayAdminForm') &&
+        $this->registerHook('displayCMSHistory');
     }
 
     public function uninstall()
@@ -140,7 +162,7 @@ class Wim_gdpr extends Module
         // Si está editando un CMS:
         if (Tools::getValue('controller') == "AdminCmsContent" && Tools::getValue('id_cms')) {
             $this->context->controller->addJquery();
-            if($this->isCMSProtected(Tools::getValue('id_cms'))){
+            if ($this->isCMSProtected(Tools::getValue('id_cms'))) {
                 $this->context->controller->addJS($this->_path . 'views/js/back.js');
             }
         }
@@ -154,17 +176,15 @@ class Wim_gdpr extends Module
 
 
     /**
-     * @param $id_cms
-     * @return bool
      * Comprueba si se está intentando desasociar alguna tienda de un CMS
+     * @param $id_cms
+     * @param $new_shop_list
+     * @return bool
      */
-    public function isDeletingShops($id_cms)
+    public function isDeletingShops($id_cms, $new_shop_list)
     {
         // Get current shops
         $current_shop_list = $this->getCmsShopList($id_cms);
-
-        // Get new shops
-        $new_shop_list = Tools::getValue('checkBoxShopAsso_cms');
 
         // Diff
         foreach ($current_shop_list as $current_shop) {
@@ -618,6 +638,7 @@ class Wim_gdpr extends Module
 
         $langs = LanguageCore::getLanguages();
 
+        // Comprobar que se ha insertado un motivo de modificacion
         foreach ($langs as $input) {
             if (!$this->AreCmsEquals($outputForm['id_cms'], $input['id_lang'], $outputForm)) {
                 if ($outputForm['modification_reason_for_a_new_' . $input['id_lang']] == "") {
@@ -626,23 +647,22 @@ class Wim_gdpr extends Module
             }
         }
 
-        if($outputForm['active'] == 0 ){
+        // Comprobar que no se desactive un CMS protegido
+        if ($outputForm['active'] == 0) {
             $errors [] = Tools::displayError('El CMS que intenta desactivar, se encuentra protegido. Para poder desactivarlo tiene que anular dicha protección en el módulo correspondiente (WebImpacto GDPR)');
         }
 
-
-        foreach ($cmsShops as $key=>$shop){
-            if(!in_array($shop['id_shop'], $outputForm['itemShopSelected'] )){
-                $errors [] = Tools::displayError('No pude desmarcar una tienda que ha sido marcada con contenido protegido (id_shop : '.$shop['id_shop'].')');
+        foreach ($cmsShops as $key => $shop) {
+            if (!in_array($shop['id_shop'], $outputForm['itemShopSelected'])) {
+                $errors [] = Tools::displayError('No pude desmarcar una tienda que ha sido marcada con contenido protegido (id_shop : ' . $shop['id_shop'] . ')');
             }
         }
-
 
         return $errors;
     }
 
     /**
-     * Devuelve un historico de
+     * Devuelve un historico de versiones de un CMS
      * @param $cms_id
      * @throws PrestaShopDatabaseException
      */
@@ -659,19 +679,25 @@ class Wim_gdpr extends Module
         AND `id_lang` = ' . (int)$lang_id . '
         ORDER BY `date_add`, `id_gdpr_cms_version`;';
 
-        if ($results = Db::getInstance()->ExecuteS($sql)) {
-            foreach ($results as $row) {
-                echo $row['id_shop'] . ' :: ' . $row['name'] . '<br />';
-            }
-        }
+        return Db::getInstance()->ExecuteS($sql);
     }
 
-    public function  getCMSshop($id_cms){
+    public function  getCMSshop($id_cms)
+    {
         $sql = '
 			SELECT *
 			FROM `' . _DB_PREFIX_ . 'cms_shop`
 			WHERE `id_cms` = ' . (int)$id_cms;
 
         return Db::getInstance()->ExecuteS($sql);
+    }
+
+    public function hookDisplayCMSHistory($params)
+    {
+        $id_cms = Tools::getValue('id_cms');
+        if ($this->isCMSProtected($id_cms)) {
+            $this->context->smarty->assign('cmsVersionHistory', $this->getCmsVersionHistory($id_cms));
+            return $this->context->smarty->fetch($this->local_path . 'views/templates/front/cms_history.tpl');
+        }
     }
 }
