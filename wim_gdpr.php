@@ -311,22 +311,23 @@ class Wim_gdpr extends Module
      */
     public function isCMSProtected($cms_id = "")
     {
+        $shop = $this->context->shop->id;
         if ($cms_id == "") {
             return false;
-        };
+        }
+
         $json = json_decode(Configuration::get('WIM_GDPR_CMS_LIST'));
 
-        foreach ($json->shop as $object) {
-            foreach ($object as $cms_list) {
-                foreach ($cms_list as $cms) {
-                    if ($cms_id == $cms) {
-                        return true;
-                    }
+        foreach ($json->shop->$shop as $cms_list) {
+
+            foreach ($cms_list as $cms) {
+                if ($cms_id == $cms) {
+                    return true;
                 }
             }
         }
-
         return false;
+
     }
 
     public function addWimGdprUserAceptance($id_gdpr_cms_version)
@@ -696,8 +697,9 @@ class Wim_gdpr extends Module
     {
         $sql = '
 			SELECT *
-			FROM `' . _DB_PREFIX_ . 'cms_shop`
-			WHERE `id_cms` = ' . (int)$id_cms;
+			FROM `' . _DB_PREFIX_ . 'cms_shop` cs
+			LEFT JOIN `'._DB_PREFIX_.'shop` s ON cs.`id_shop` = s.`id_shop`
+			WHERE cs.`id_cms` = ' . (int)$id_cms;
 
         return Db::getInstance()->ExecuteS($sql);
     }
