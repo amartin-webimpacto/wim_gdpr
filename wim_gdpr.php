@@ -92,7 +92,8 @@ class Wim_gdpr extends Module
         $this->registerHook('backOfficeHeader') &&
         $this->registerHook('displayHeader') &&
         $this->registerHook('displayAdminForm') &&
-        $this->registerHook('displayCMSHistory');
+        $this->registerHook('displayCMSHistory') &&
+        $this->registerHook('actionObjectCmsUpdateBefore');
     }
 
     public function uninstall()
@@ -120,7 +121,7 @@ class Wim_gdpr extends Module
         $this->context->smarty->assign(array(
             'token' => Tools::getAdminTokenLite('AdminModules'),
         ));
-        
+
         $this->context->smarty->assign('gdpr_list', $this->getGDPRList());
         $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
 
@@ -167,7 +168,7 @@ class Wim_gdpr extends Module
             }
         }
         // Si está en la configuración del módulo:
-        if (Tools::getValue('module_name') == $this->name) {
+        if (Tools::getValue('configure') == $this->name) {
             $this->context->smarty->assign('gdpr_list', $this->getGDPRList());
             $this->context->controller->addJS($this->_path . 'views/js/module_admin.js');
             $this->context->controller->addCSS($this->_path . 'views/css/back.css');
@@ -379,11 +380,14 @@ class Wim_gdpr extends Module
         if (is_null($id_lang)) {
             $id_lang = (int)Configuration::get('PS_LANG_DEFAULT');
         }
+        $id_shop = Context::getContext()->shop->id;
 
         $sql = '
 			SELECT *
 			FROM `' . _DB_PREFIX_ . 'cms_lang`
-			WHERE `id_cms` = ' . (int)$id_cms . ' AND `id_lang` = ' . (int)$id_lang;
+			WHERE `id_cms` = ' . (int)$id_cms . '
+			AND `id_lang` = ' . (int)$id_lang . '
+			AND `id_shop` = ' . (int)$id_shop;
 
         return Db::getInstance()->getRow($sql);
     }
@@ -566,6 +570,8 @@ class Wim_gdpr extends Module
                 WHERE `id_cms` = ' . (int)$id_cms . '
                 AND `id_lang` = ' . (int)$id_lang . '
                 AND `id_shop` = ' . Context::getContext()->shop->id;
+        //$this->context->shop->id Context::getContext()->shop->id
+    error_log($sql);
         if ($old_cms = Db::getInstance()->getRow($sql)) {
             // Get new CMS
 
@@ -588,10 +594,11 @@ class Wim_gdpr extends Module
                     'link_rewrite' => Tools::getValue('link_rewrite_' . $id_lang),
                 );
             }
-            $old_cms['content'] = strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/','', preg_replace("/(\r\n)+|\r+|\n+|\t+/i", " ", $old_cms['content'])));
-            $new_cms['content'] = strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/','', preg_replace("/(\r\n)+|\r+|\n+|\t+/i", " ", $new_cms['content'])));
+            $old_cms['content'] = strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/', '', preg_replace("/(\r\n)+|\r+|\n+|\t+/i", " ", $old_cms['content'])));
+            $new_cms['content'] = strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/', '', preg_replace("/(\r\n)+|\r+|\n+|\t+/i", " ", $new_cms['content'])));
 
             // Compare
+            error_log($old_cms['content']." =========== ".$new_cms['content']);
             if ($old_cms['content'] == $new_cms['content']) {// No se realiza comparación binaria por si los tipos de datos fueran distintos
                 return true;
             } else {
