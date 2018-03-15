@@ -50,4 +50,5 @@
 <!-- FIN SHOW TO USERS -->
 <script type="text/javascript">
     var url = '{$url}';
+    var current_id_shop = '{$current_id_shop}'
 </script>
