@@ -339,7 +339,6 @@ class Wim_gdpr extends Module
         }
 
         $json = json_decode(Configuration::get('WIM_GDPR_CMS_LIST'));
-
         foreach ($json->shop->$shop as $cms_list) {
 
             foreach ($cms_list as $cms) {
@@ -699,10 +698,9 @@ class Wim_gdpr extends Module
         if ($outputForm['active'] == 0) {
             $errors [] = Tools::displayError('El CMS que intenta desactivar, se encuentra protegido. Para poder desactivarlo tiene que anular dicha protección en el módulo correspondiente (WebImpacto GDPR)');
         }
-
         foreach ($cmsShops as $key => $shop) {
             if (!in_array($shop['id_shop'], $outputForm['itemShopSelected'])) {
-                $errors [] = Tools::displayError('No pude desmarcar una tienda que ha sido marcada con contenido protegido (id_shop : ' . $shop['id_shop'] . ')');
+                $errors [] = Tools::displayError('No pude desmarcar una tienda que ha sido marcada con contenido protegido (Tienda : ' . $shop['name'] . ')');
             }
         }
 
@@ -735,8 +733,8 @@ class Wim_gdpr extends Module
         $sql = '
 			SELECT *
 			FROM `' . _DB_PREFIX_ . 'cms_shop` cs
-			LEFT JOIN `' . _DB_PREFIX_ . 'shop` s ON cs.`id_shop` = s.`id_shop`
-			WHERE cs.`id_cms` = ' . (int)$id_cms;
+            LEFT JOIN `' . _DB_PREFIX_ . 'shop` s ON cs.`id_shop` = s.`id_shop`
+            WHERE cs.`id_cms` = ' . (int)$id_cms;
 
         return Db::getInstance()->ExecuteS($sql);
     }
