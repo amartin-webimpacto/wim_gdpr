@@ -6,8 +6,8 @@
 	<description><![CDATA[WebImpacto General Data Protection Regulation]]></description>
 	<author><![CDATA[WebImpacto]]></author>
 	<tab><![CDATA[others]]></tab>
-	<confirmUninstall><![CDATA[]]></confirmUninstall>
+	<confirmUninstall><![CDATA[Va a proceder a desistalar el módulo Wim_gdpr. ¿Esta seguro?]]></confirmUninstall>
 	<is_configurable>1</is_configurable>
-	<need_instance>1</need_instance>
+	<need_instance>0</need_instance>
 	<limited_countries></limited_countries>
 </module>

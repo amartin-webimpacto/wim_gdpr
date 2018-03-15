@@ -38,7 +38,7 @@ class Wim_gdpr extends Module
         $this->tab = 'others';
         $this->version = '1.0.0';
         $this->author = 'WebImpacto';
-        $this->need_instance = 1;
+        $this->need_instance = 0;
 
         /**
          * Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)
@@ -50,7 +50,7 @@ class Wim_gdpr extends Module
         $this->displayName = $this->l('WebImpacto GDPR');
         $this->description = $this->l('WebImpacto General Data Protection Regulation');
 
-        $this->confirmUninstall = $this->l('');
+        $this->confirmUninstall = $this->l('Va a proceder a desistalar el módulo Wim_gdpr. ¿Esta seguro?');
 
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
     }
@@ -71,6 +71,8 @@ class Wim_gdpr extends Module
         $this->registerHook('backOfficeHeader') &&
         $this->registerHook('displayHeader') &&
         $this->registerHook('displayAdminForm');
+
+
     }
 
     public function uninstall()
@@ -98,12 +100,12 @@ class Wim_gdpr extends Module
         $this->context->smarty->assign(array(
             'token' => Tools::getAdminTokenLite('AdminModules'),
         ));
-
+        
+        $this->context->smarty->assign('gdpr_list', $this->getGDPRList());
         $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
 
         return $output;
     }
-
 
     /**
      * Set values for the inputs.
@@ -567,6 +569,9 @@ class Wim_gdpr extends Module
                     'link_rewrite' => Tools::getValue('link_rewrite_' . $id_lang),
                 );
             }
+            $old_cms['content'] = strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/','', preg_replace("/(\r\n)+|\r+|\n+|\t+/i", " ", $old_cms['content'])));
+            $new_cms['content'] = strtolower(preg_replace('/[^a-zA-Z0-9-_\.]/','', preg_replace("/(\r\n)+|\r+|\n+|\t+/i", " ", $new_cms['content'])));
+
             // Compare
             if ($old_cms['content'] == $new_cms['content']) {// No se realiza comparación binaria por si los tipos de datos fueran distintos
                 return true;
