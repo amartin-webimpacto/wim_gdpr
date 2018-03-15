@@ -142,6 +142,7 @@ class Wim_gdpr extends Module
         // Si está editando un CMS:
         if (Tools::getValue('controller') == "AdminCmsContent" && Tools::getValue('id_cms')) {
             $this->context->controller->addJquery();
+
             if($this->isCMSProtected(Tools::getValue('id_cms'))){
                 $this->context->controller->addJS($this->_path . 'views/js/back.js');
             }
@@ -292,22 +293,23 @@ class Wim_gdpr extends Module
      */
     public function isCMSProtected($cms_id = "")
     {
+        $shop = $this->context->shop->id;
         if ($cms_id == "") {
             return false;
-        };
+        }
+
         $json = json_decode(Configuration::get('WIM_GDPR_CMS_LIST'));
 
-        foreach ($json->shop as $object) {
-            foreach ($object as $cms_list) {
-                foreach ($cms_list as $cms) {
-                    if ($cms_id == $cms) {
-                        return true;
-                    }
+        foreach ($json->shop->$shop as $cms_list) {
+
+            foreach ($cms_list as $cms) {
+                if ($cms_id == $cms) {
+                    return true;
                 }
             }
         }
-
         return false;
+
     }
 
     public function addWimGdprUserAceptance($id_gdpr_cms_version)
@@ -638,7 +640,7 @@ class Wim_gdpr extends Module
 
         foreach ($cmsShops as $key=>$shop){
             if(!in_array($shop['id_shop'], $outputForm['itemShopSelected'] )){
-                $errors [] = Tools::displayError('No pude desmarcar una tienda que ha sido marcada con contenido protegido (id_shop : '.$shop['id_shop'].')');
+                $errors [] = Tools::displayError('No pude desmarcar una tienda que ha sido marcada con contenido protegido (Tienda : '.$shop['name'].')');
             }
         }
 
@@ -674,8 +676,9 @@ class Wim_gdpr extends Module
     public function  getCMSshop($id_cms){
         $sql = '
 			SELECT *
-			FROM `' . _DB_PREFIX_ . 'cms_shop`
-			WHERE `id_cms` = ' . (int)$id_cms;
+			FROM `' . _DB_PREFIX_ . 'cms_shop` cs
+			LEFT JOIN `'._DB_PREFIX_.'shop` s ON cs.`id_shop` = s.`id_shop`
+			WHERE cs.`id_cms` = ' . (int)$id_cms;
 
         return Db::getInstance()->ExecuteS($sql);
     }
