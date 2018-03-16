@@ -163,7 +163,10 @@ class Wim_gdpr extends Module
         // Si está editando un CMS:
         if (Tools::getValue('controller') == "AdminCmsContent" && Tools::getValue('id_cms')) {
             $this->context->controller->addJquery();
-            if ($this->isCMSProtected(Tools::getValue('id_cms'))) {
+
+            $allShops = $this->getContextShop();
+
+            if ($this->isCMSProtected(Tools::getValue('id_cms'), $allShops)) {
                 $this->context->controller->addJS($this->_path . 'views/js/back.js');
             }
         }
@@ -175,6 +178,20 @@ class Wim_gdpr extends Module
         }
     }
 
+    public function getContextShop()
+    {
+        $shop = Shop::getContextShopID();
+        $allShops = [];
+        if ($shop == null) {// "Todas las tiendas"/"Default group" seleccionado
+            foreach (Shop::getShops() as $shopElement) {
+                $allShops[] = $shopElement["id_shop"];
+            }
+        } else {
+            $allShops[] = $shop;
+        }
+
+        return $allShops;
+    }
 
     /**
      * Comprueba si se está intentando desasociar alguna tienda de un CMS
@@ -331,25 +348,82 @@ class Wim_gdpr extends Module
      * @return bool
      * Comprueba si un cms esta controlado en el json de configuracion
      */
-    public function isCMSProtected($cms_id = "")
-    {
-        $shop = $this->context->shop->id;
-        if ($cms_id == "") {
+    /*    public function isCMSProtected($cms_id = "")
+        {
+            $shop = $this->context->shop->id;
+            die("======================".$shop);
+            if ($cms_id == "") {
+                return false;
+            }
+
+            $json = json_decode(Configuration::get('WIM_GDPR_CMS_LIST'));
+            foreach ($json->shop->$shop as $cms_list) {
+
+                foreach ($cms_list as $cms) {
+                    if ($cms_id == $cms) {
+                        return true;
+                    }
+                }
+            }
             return false;
-        }
+
+        }*/
+
+    public function isCMSProtected($cms_id = "", $allShops = null)
+    {
 
         $json = json_decode(Configuration::get('WIM_GDPR_CMS_LIST'));
-        foreach ($json->shop->$shop as $cms_list) {
 
-            foreach ($cms_list as $cms) {
-                if ($cms_id == $cms) {
-                    return true;
+        if (empty($allShops)) {// Viene del listado
+            foreach ($json->shop as $object) {
+                foreach ($object as $cms_list) {
+                    foreach ($cms_list as $cms) {
+                        if ($cms_id == $cms) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } else { // Viene del CMS
+            foreach ($allShops as $shop_id) {
+                $cms_list = $json->shop->$shop_id;
+                foreach ($cms_list as $cms_item) {
+                    foreach ($cms_item as $cms) {
+                        if ($cms_id == $cms) {
+                            return true;
+                        }
+                    }
                 }
             }
         }
-        return false;
 
+
+        /*
+        if (!empty($allShops)) {// Viene del listado
+            foreach ($json->shop as $object) {
+                foreach ($object as $cms_list) {
+                    foreach ($cms_list as $cms) {
+                        if ($cms_id == $cms) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } else { // Viene del CMS
+            foreach ($allShops as $shop_id) {
+                foreach ($json->shop->$shop_id as $cms_list) {
+                    foreach ($cms_list as $cms) {
+                        if ($cms_id == $cms) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }*/
+
+        return false;
     }
+
 
     public function addWimGdprUserAceptance($id_gdpr_cms_version)
     {
@@ -501,18 +575,22 @@ class Wim_gdpr extends Module
     {
         $data = array();
         $protectedCmsList = $this->getProtectedCmsList();
+        $shop_id = (int)Context::getContext()->shop->id;;
 
-        $sql = 'SELECT *
-                FROM ' . _DB_PREFIX_ . 'wim_gdpr_cms_versions
-                WHERE id_gdpr_cms_version IN(
+        $sql = 'SELECT v.*
+                FROM ' . _DB_PREFIX_ . 'wim_gdpr_cms_versions v, ' . _DB_PREFIX_ . 'cms_shop s
+                WHERE v.id_cms = s.id_cms
+                AND s.id_shop = "' . $shop_id . '"
+                AND v.id_gdpr_cms_version IN(
                     SELECT max(id_gdpr_cms_version)
                     FROM ' . _DB_PREFIX_ . 'wim_gdpr_cms_versions
                     WHERE id_cms IN (' . implode(",", $protectedCmsList) . ')
                     AND id_lang = ' . $this->context->language->id . '
+                    AND id_shop = ' . $shop_id . '
                     GROUP BY id_cms
                 )
-                AND show_to_users IN (1,2)
-                AND id_gdpr_cms_version NOT IN (
+                AND v.show_to_users IN (1)
+                AND v.id_gdpr_cms_version NOT IN (
                     SELECT id_gdpr_cms_version
                     FROM ' . _DB_PREFIX_ . 'wim_gdpr_user_aceptance
                     WHERE id_customer = ' . $this->getCurrentCustomer() . '
@@ -662,7 +740,8 @@ class Wim_gdpr extends Module
 
     public function hookDisplayAdminForm($params)
     {
-        if ($this->isCMSProtected(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'))) {
+        $selectedShopList = $this->getContextShop();
+        if ($this->isCMSProtected(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'),$selectedShopList)) {
             $languageList = LanguageCore::getLanguages();
             $this->smarty->assign('languageList', $languageList);
             $this->smarty->assign('show_to_users', $this->getCmsShowToUserValue(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms')));
@@ -743,7 +822,8 @@ class Wim_gdpr extends Module
     public function hookDisplayCMSHistory($params)
     {
         $id_cms = Tools::getValue('id_cms');
-        if ($this->isCMSProtected($id_cms)) {
+        $selectedShop = $this->getContextShop();
+        if ($this->isCMSProtected($id_cms, $selectedShop)) {
             $this->context->smarty->assign('cmsVersionHistory', $this->getCmsVersionHistory($id_cms));
             return $this->context->smarty->fetch($this->local_path . 'views/templates/front/cms_history.tpl');
         }
