@@ -654,6 +654,7 @@ class Wim_gdpr extends Module
 			WHERE `id_cms` = ' . (int)$id_cms . '
 			AND `id_shop` = ' . (int)$id_shop . '
 			AND `id_lang` = ' . (int)$id_lang . '
+			ORDER BY id_gdpr_cms_version DESC
 			';
 
         return Db::getInstance()->getRow($sql);
