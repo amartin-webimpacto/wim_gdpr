@@ -34,7 +34,7 @@ function canDeleteCms($cms)
             die(Tools::jsonEncode(array('result' => "false")));
         }
     } else {
-        if (!Wim_gdpr::canDeleteCMS($cms)) {
+        if (Wim_gdpr::isCMSProtected($cms)) {
             die(Tools::jsonEncode(array('result' => "false")));
         }
     }
