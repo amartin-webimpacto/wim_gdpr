@@ -281,7 +281,7 @@ class Wim_gdpr extends Module
                             $newShowToUsers = Tools::getValue('show_to_users');
                             $lastCmsVersion = $this->getLastCmsVersion(Tools::getValue('id_cms'), $language["id_lang"], $shop);
                             if ($newShowToUsers != $lastCmsVersion["show_to_users"]) {
-                                $newCms['modification_reason_for_a_new']= $this->l('Apartado \'Mostrar usuarios\' modificado');
+                                $newCms['modification_reason_for_a_new'] = $this->l('Apartado \'Mostrar usuarios\' modificado');
                                 if (!$this->addWimGdprCmsVersions($newCms)) {
                                     $this->errors[] = Tools::displayError('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.');
                                     return false;
@@ -539,7 +539,7 @@ class Wim_gdpr extends Module
      * @return int
      * A partir de un "id_cms", devuelve el útlimo valor "show_to_users" asociado a este
      */
-    public function getCmsShowToUserValue($id_cms,$id_shop)
+    public function getCmsShowToUserValue($id_cms, $id_shop)
     {
         $sql = 'SELECT show_to_users
                 FROM ' . _DB_PREFIX_ . 'wim_gdpr_cms_versions
@@ -587,6 +587,7 @@ class Wim_gdpr extends Module
      */
     public function AreCmsEquals($id_cms, $id_lang, $outputForm = null, $id_shop = null)
     {
+
         if (isset($outputForm)) {
             $id_shop = $outputForm['current_id_shop'];
         }
@@ -597,7 +598,6 @@ class Wim_gdpr extends Module
                 WHERE `id_cms` = ' . (int)$id_cms . '
                 AND `id_lang` = ' . (int)$id_lang . '
                 AND `id_shop` = ' . (int)$id_shop;
-
         if ($old_cms = Db::getInstance()->getRow($sql)) {
             // Get new CMS
             if (!empty($outputForm)) {
@@ -688,7 +688,6 @@ class Wim_gdpr extends Module
         $cmsShops = $this->getCMSshop($outputForm['id_cms']);
 
         $langs = LanguageCore::getLanguages();
-
         // Comprobar que se ha insertado un motivo de modificacion
         foreach ($langs as $input) {
             if (!$this->AreCmsEquals($outputForm['id_cms'], $input['id_lang'], $outputForm)) {
@@ -702,12 +701,15 @@ class Wim_gdpr extends Module
         if ($outputForm['active'] == 0) {
             $errors [] = Tools::displayError('El CMS que intenta desactivar, se encuentra protegido. Para poder desactivarlo tiene que anular dicha protección en el módulo correspondiente (WebImpacto GDPR)');
         }
-        foreach ($cmsShops as $key => $shop) {
-            if (!in_array($shop['id_shop'], $outputForm['itemShopSelected'])) {
-                $errors [] = Tools::displayError('No pude desmarcar una tienda que ha sido marcada con contenido protegido (Tienda : ' . $shop['name'] . ')');
+
+        if (count($outputForm['itemShopSelected']) > 0) {
+            foreach ($cmsShops as $key => $shop) {
+
+                if (!in_array($shop['id_shop'], $outputForm['itemShopSelected'])) {
+                    $errors [] = Tools::displayError('No pude desmarcar una tienda que ha sido marcada con contenido protegido (Tienda : ' . $shop['name'] . ')');
+                }
             }
         }
-
         return $errors;
     }
 
