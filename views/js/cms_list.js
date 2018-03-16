@@ -182,7 +182,6 @@ function preDisableMultiple() {
                 // no se pude eliminar, mostrar errror
                 showError("No se puede ocultar el CMS porque está protegido por WebImpacto GDPR");
             }
-
         },
         error: function () {
             // error en el servidor
