@@ -86,7 +86,6 @@ class Wim_gdpr extends Module
 
         include(dirname(__FILE__) . '/sql/install.php');
 
-
         return parent::install() &&
         $this->registerHook('header') &&
         $this->registerHook('backOfficeHeader') &&
@@ -294,7 +293,6 @@ class Wim_gdpr extends Module
         }
     }
 
-
     /**
      * Muestra al usuario el popup para aceptar los cambios en los CMS si corresponde
      * @return mixed
@@ -348,30 +346,8 @@ class Wim_gdpr extends Module
      * @return bool
      * Comprueba si un cms esta controlado en el json de configuracion
      */
-    /*    public function isCMSProtected($cms_id = "")
-        {
-            $shop = $this->context->shop->id;
-            die("======================".$shop);
-            if ($cms_id == "") {
-                return false;
-            }
-
-            $json = json_decode(Configuration::get('WIM_GDPR_CMS_LIST'));
-            foreach ($json->shop->$shop as $cms_list) {
-
-                foreach ($cms_list as $cms) {
-                    if ($cms_id == $cms) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-
-        }*/
-
     public function isCMSProtected($cms_id = "", $allShops = null)
     {
-
         $json = json_decode(Configuration::get('WIM_GDPR_CMS_LIST'));
 
         if (empty($allShops)) {// Viene del listado
@@ -396,30 +372,6 @@ class Wim_gdpr extends Module
                 }
             }
         }
-
-
-        /*
-        if (!empty($allShops)) {// Viene del listado
-            foreach ($json->shop as $object) {
-                foreach ($object as $cms_list) {
-                    foreach ($cms_list as $cms) {
-                        if ($cms_id == $cms) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } else { // Viene del CMS
-            foreach ($allShops as $shop_id) {
-                foreach ($json->shop->$shop_id as $cms_list) {
-                    foreach ($cms_list as $cms) {
-                        if ($cms_id == $cms) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }*/
 
         return false;
     }
@@ -501,36 +453,6 @@ class Wim_gdpr extends Module
 
         return $id_customer;
     }
-
-    /*public function dummy($cms_id)
-    {
-        $lang_id = $this->context->language->id;
-        $customer_id = Context::getContext()->customer->id;
-        $shop_id = Context::getContext()->shop->id;
-
-        // 1: Comprobar si hay actualizaciones en wim_gdpr_cms_versions para el cms recibido
-        $sql = 'SELECT id_gdpr_cms_version
-        FROM `' . _DB_PREFIX_ . 'wim_gdpr_cms_versions`
-        WHERE `id_cms` = ' . (int)$cms_id . '
-        AND `id_shop` = ' . (int)$shop_id . '
-        AND `id_lang` = ' . (int)$lang_id . '
-        ORDER BY `id_gdpr_cms_version` DESC;';
-
-        $row = Db::getInstance()->getRow($sql);
-        $id_gdpr_cms_version = $row["id_gdpr_cms_version"];
-
-        // 2: Con el id_gdpr_cms_version, buscar en el campo de usuarios si ya se le ha mostrado al usuario en sesion
-        $sql = 'SELECT COUNT(*) AS cont
-        FROM `' . _DB_PREFIX_ . 'wim_gdpr_user_aceptance`
-        WHERE `id_customer` =' . (int)$customer_id . '
-        AND `id_gdpr_cms_version` =  ' . (int)$id_gdpr_cms_version;
-
-        $row = Db::getInstance()->getRow($sql);
-        if ($row["cont"] == 0) {
-            return true;
-        }
-        return false;
-    }*/
 
     /**
      * Obtiene un listado de cms_lang para el lenguaje en el que esté abierta la web y para la tienda que esté abierta
@@ -741,7 +663,7 @@ class Wim_gdpr extends Module
     public function hookDisplayAdminForm($params)
     {
         $selectedShopList = $this->getContextShop();
-        if ($this->isCMSProtected(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'),$selectedShopList)) {
+        if ($this->isCMSProtected(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), $selectedShopList)) {
             $languageList = LanguageCore::getLanguages();
             $this->smarty->assign('languageList', $languageList);
             $this->smarty->assign('show_to_users', $this->getCmsShowToUserValue(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms')));
