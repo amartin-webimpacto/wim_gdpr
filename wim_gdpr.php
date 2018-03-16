@@ -498,7 +498,7 @@ class Wim_gdpr extends Module
     {
         $data = array();
         $protectedCmsList = $this->getProtectedCmsList();
-        $shop_id = (int)Context::getContext()->shop->id;;
+        $shop_id = (int)Context::getContext()->shop->id;
 
         $sql = 'SELECT v.*
                 FROM ' . _DB_PREFIX_ . 'wim_gdpr_cms_versions v, ' . _DB_PREFIX_ . 'cms_shop s
