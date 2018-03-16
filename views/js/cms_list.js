@@ -196,6 +196,7 @@ function preDisableMultiple() {
  * @param mensaje
  */
 function showError(mensaje) {
+    $('#content .alert').remove();
     var container = $("<div>").addClass("bootstrap");
     var divMsg = $("<div>").addClass("alert alert-danger").text(mensaje);
     var buttonClose = $("<button>").attr({
