@@ -281,6 +281,7 @@ class Wim_gdpr extends Module
                             $newShowToUsers = Tools::getValue('show_to_users');
                             $lastCmsVersion = $this->getLastCmsVersion(Tools::getValue('id_cms'), $language["id_lang"], $shop);
                             if ($newShowToUsers != $lastCmsVersion["show_to_users"]) {
+                                $newCms['modification_reason_for_a_new']= $this->l('Apartado \'Mostrar usuarios\' modificado');
                                 if (!$this->addWimGdprCmsVersions($newCms)) {
                                     $this->errors[] = Tools::displayError('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.');
                                     return false;
@@ -538,11 +539,12 @@ class Wim_gdpr extends Module
      * @return int
      * A partir de un "id_cms", devuelve el útlimo valor "show_to_users" asociado a este
      */
-    public function getCmsShowToUserValue($id_cms)
+    public function getCmsShowToUserValue($id_cms,$id_shop)
     {
         $sql = 'SELECT show_to_users
                 FROM ' . _DB_PREFIX_ . 'wim_gdpr_cms_versions
                 WHERE id_cms = ' . $id_cms . '
+                AND id_shop =  ' . $id_shop . '
                 ORDER BY id_gdpr_cms_version DESC';
         if ($row = Db::getInstance()->getRow($sql)) {
             return $row['show_to_users'];
@@ -666,7 +668,7 @@ class Wim_gdpr extends Module
         if ($this->isCMSProtected(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), $selectedShopList)) {
             $languageList = LanguageCore::getLanguages();
             $this->smarty->assign('languageList', $languageList);
-            $this->smarty->assign('show_to_users', $this->getCmsShowToUserValue(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms')));
+            $this->smarty->assign('show_to_users', $this->getCmsShowToUserValue(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), $this->context->shop->id));
             $this->smarty->assign('url', __PS_BASE_URI__);
             $this->smarty->assign('current_id_shop', $this->context->shop->id);
 
