@@ -90,7 +90,8 @@ $(document).ready(function () {
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    console.log(data);
+                    // error en el servidor
+                    showError("Ha ocurrido un error inesperado en el servidor.");
                 }
             });
         });
