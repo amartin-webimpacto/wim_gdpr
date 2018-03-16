@@ -43,7 +43,7 @@ function showError(mensaje) {
 $(document).ready(function () {
     $(function () {
 
-        $('#cms_form button[type="submit"]').on('click', function(e){
+        $('#cms_form button[type="submit"]').on('click', function (e) {
 
             // content texarea
             var pagContent = $('.mce-tinymce.mce-container.mce-panel iframe');
@@ -55,16 +55,26 @@ $(document).ready(function () {
 
                 });
             });
+
+            /*
+             var dataForm_serialize =  $('#cms_form').serializeArray();
+             dataForm.push({ name: "current_id_shop", value: current_id_shop });
+             */
+
             //shop tree
+
+
             var inputChecked = $('.panel .tree-folder input:checked');
             var itemShopSelected = '';
-            inputChecked.each(function( index ) {
-                var id_shop = $(this).val();
-                itemShopSelected += '&itemShopSelected['+index+']='+id_shop+'&';
-            });
+            if (inputChecked.length) {
+                inputChecked.each(function (index) {
+                    var id_shop = $(this).val();
+                    itemShopSelected += '&itemShopSelected[' + index + ']=' + id_shop;
+                });
+            }
 
-            var dataForm_serialize =  $('#cms_form').serialize();
-            var dataForm = dataForm_serialize + itemShopSelected + 'current_id_shop='+current_id_shop;
+            var dataForm_serialize = $('#cms_form').serialize();
+            var dataForm = dataForm_serialize + itemShopSelected + '&current_id_shop=' + current_id_shop;
 
             $.ajax({
                 type: 'POST',
@@ -76,14 +86,12 @@ $(document).ready(function () {
                 },
                 dataType: 'json',
                 async: false,
-                success: function (jsonData)
-                {
+                success: function (jsonData) {
                     $('.alert.alert-danger, .alert.alert-success').remove();
-                    if (typeof jsonData !== 'undefined' && jsonData.length > 0)
-                    {
+                    if (typeof jsonData !== 'undefined' && jsonData.length > 0) {
                         e.preventDefault();
-                        jsonData.forEach(function(error, index) {
-                            showError(error );
+                        jsonData.forEach(function (error, index) {
+                            showError(error);
                         });
 
                         $("html, body").animate({scrollTop: 0}, 500);
