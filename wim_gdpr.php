@@ -664,23 +664,18 @@ class Wim_gdpr extends Module
 
     public function hookDisplayAdminForm($params)
     {
-        $adminCmsControllerCore = new AdminCmsControllerCore();
-
         $selectedShopList = $this->getContextShop();
-
-        $this_object = (isset($this->object)) ? $this->object : "";
-        if ($this->isCMSProtected($adminCmsControllerCore->getFieldValue($this_object, 'id_cms'), $selectedShopList)) {
+        if ($this->isCMSProtected(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), $selectedShopList)) {
             $languageList = LanguageCore::getLanguages();
-            $adminCmsControllerCore = new AdminCmsControllerCore();
-
             $this->smarty->assign('languageList', $languageList);
-            $this->smarty->assign('show_to_users', $this->getCmsShowToUserValue($adminCmsControllerCore->getFieldValue($this_object, 'id_cms'), $this->context->shop->id));
+            $this->smarty->assign('show_to_users', $this->getCmsShowToUserValue(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), $this->context->shop->id));
             $this->smarty->assign('url', __PS_BASE_URI__);
             $this->smarty->assign('current_id_shop', $this->context->shop->id);
 
             return $this->display(__FILE__, 'views/templates/admin/cms_fields.tpl');
         }
     }
+
 
     /**
      * Si existen errores en las validaciones establecidas devuelve mensaje de error correspondiente
