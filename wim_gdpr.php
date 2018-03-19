@@ -73,7 +73,7 @@ class Wim_gdpr extends Module
 
         $this->confirmUninstall = $this->l('Va a proceder a desistalar el módulo Wim_gdpr. ¿Esta seguro?');
 
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.5', 'max' => _PS_VERSION_);
     }
 
     /**
@@ -304,8 +304,8 @@ class Wim_gdpr extends Module
         if (count($cmsToAccept) > 0) {
             $this->context->controller->addCSS($this->_path . '/views/css/modal.css');
             $this->context->controller->addJS($this->_path . '/views/js/front.js');
-            $this->context->smarty->assign('cms', $cmsToAccept);
-            $this->context->smarty->assign('id_gdpr_cms_version', '1');
+            $this->context->smarty->assign('cmsList', $cmsToAccept);
+            //$this->context->smarty->assign('id_gdpr_cms_version', '1');
             return $this->display(__FILE__, 'modal.tpl');
         }
     }
@@ -705,7 +705,7 @@ class Wim_gdpr extends Module
 
         // Comprobar que no se desactive un CMS protegido
         if ($outputForm['active'] == 0) {
-            $errors [] = Tools::displayError('El CMS que intenta desactivar, se encuentra protegido. Para poder desactivarlo tiene que anular dicha protección en el módulo correspondiente (WebImpacto GDPR)');
+            $errors [] = Tools::displayError('El CMS que intenta desactivar se encuentra protegido. Para poder desactivarlo tiene que anular dicha protección en el módulo correspondiente (WebImpacto GDPR)');
         }
 
         if (count($outputForm['itemShopSelected']) > 0) {
