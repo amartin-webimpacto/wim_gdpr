@@ -10,16 +10,28 @@ $(document).ready(function () {
  * para que antes de realizar ninguna acción se compruebe si el CMS está protegido por wimgdpr
  */
 function overrideDeleteCmsButtons() {
-    $("#table-cms").children("tbody").find(".btn-group-action").find(".delete").each(function () {
-        $(this).attr("elonclick", $(this).attr("onclick"));
-        $(this).attr("onclick", "preDelete(this);event.stopPropagation(); event.preventDefault();");
-    })
+    if ($("#table-cms").children("tbody").find(".btn-group-action").find(".delete").length) { // Prestashop >= 1.6
+        $("#table-cms").children("tbody").find(".btn-group-action").find(".delete").each(function () {
+            $(this).attr("elonclick", $(this).attr("onclick"));
+            $(this).attr("onclick", "preDelete(this);event.stopPropagation(); event.preventDefault();");
+        })
+    } else {// Prestashop <= 1.5
+        $("#cms").children("tbody").find(".delete").each(function () {
+            $(this).attr("elonclick", $(this).attr("onclick"));
+            $(this).attr("onclick", "preDelete(this);event.stopPropagation(); event.preventDefault();");
+        });
+    }
 }
 
 function preDelete(element) {
     var a = $(element);
-    var tr = $(a).parent().parent().parent().parent().parent().parent();
-    var id = $(tr).children("td:eq( 1 )").text().trim();
+    if ($("#table-cms").length) {// Prestashop >= 1.6
+        var tr = $(a).parent().parent().parent().parent().parent().parent();
+    } else { // Prestashop <= 1.5
+        var tr = $(a).parent().parent();
+    }
+
+    var id = $(tr).children("td:eq(1)").text().trim();
 
     $.ajax({
         type: 'POST',
@@ -64,6 +76,12 @@ function preDelete(element) {
  */
 function overrideBulkDeleteCmsButton() {
     var a = $(".bulk-actions").find(".icon-trash").parent();
+
+    if ($("#cms").length) { // Prestashop <= 1.5
+        a = $("#cms").parent().find("[name='submitBulkdeletecms']");
+        a.prop("type", "button");
+    }
+
     a.attr("elonclick", a.attr("onclick"));
     a.attr("onclick", "preDeleteMultiple()");
 }
@@ -82,7 +100,11 @@ function preDeleteMultiple() {
         dataType: 'json',
         success: function (json) {
             // Obtener el mensaje de confirmación
-            var a = $(".bulk-actions").find(".icon-trash").parent();
+            var a = $(".bulk-actions").find(".icon-trash").parent();// Prestashop >=1.6
+            if ($("#cms").length) { // Prestashop <= 1.5
+                a = $("#cms").parent().find("[name='submitBulkdeletecms']");
+            }
+
             var mensaje = a.attr("elonclick");
             var start = mensaje.indexOf("'") + 1;
             mensaje = mensaje.substring(start);
@@ -92,7 +114,12 @@ function preDeleteMultiple() {
             if (confirm(mensaje)) {
                 if (json["result"] == "true") {
                     // Se elimina (no está protegido por wimgdpr)
-                    sendBulkAction(a.closest('form').get(0), 'submitBulkdeletecms');
+                    if (!$("#cms").length) { // Prestashop >= 1.6
+                        sendBulkAction(a.closest('form').get(0), 'submitBulkdeletecms');
+                    } else { // Prestashop <= 1.5
+                        a.prop("type","submit").attr("onclick", "return true;");
+                        a.click();
+                    }
                 } else {
                     // no se pude eliminar, mostrar errror
                     showError("No se puede eliminar el CMS porque está protegido por WebImpacto GDPR");
@@ -111,18 +138,25 @@ function preDeleteMultiple() {
  * para que antes de realizar la acción se compruebe si el CMS está protegido por wimgdpr
  */
 function overrideDisableCmsButtons() {
+    // Prestashop >= 1.6
     $("#table-cms").children("tbody").find(".icon-check").each(function () {
         var a = $(this).parent();
         a.attr("onclick", "preDisableCms(this)");
         a.attr("elhref", a.attr("href"))
         a.removeAttr("href");
-    })
+    });
+    // Prestashop <= 1.5
+    $("#cms").children("tbody").find("img[src='../img/admin/enabled.gif']").each(function () {
+        var a = $(this).parent();
+        a.attr("onclick", "preDisableCms(this)");
+        a.attr("elhref", a.attr("href"))
+        a.removeAttr("href");
+    });
 }
 
 function preDisableCms(a) {
     var tr = $(a).parent().parent();
-    var id = $(tr).children("td:eq( 1 )").text().trim();
-
+    var id = $(tr).children("td:eq(1)").text().trim();
     $.ajax({
         type: 'POST',
         async: false,
@@ -195,17 +229,26 @@ function preDisableMultiple() {
  * @param mensaje
  */
 function showError(mensaje) {
-    $('#content .alert').remove();
-    var container = $("<div>").addClass("bootstrap");
-    var divMsg = $("<div>").addClass("alert alert-danger").text(mensaje);
-    var buttonClose = $("<button>").attr({
-        type: "button",
-        "data-dismiss": "alert"
-    }).addClass("close").text("×")
-    divMsg.append(buttonClose);
-    container.append(divMsg);
+    if ($("#content>.bootstrap:eq(0)").length) {// Version >= 1.6
+        $('#content .alert').remove();
 
-    $(container).insertAfter("#content>.bootstrap:eq(0)");
+        var container = $("<div>").addClass("bootstrap");
+        var divMsg = $("<div>").addClass("alert alert-danger").text(mensaje);
+        var buttonClose = $("<button>").attr({
+            type: "button",
+            "data-dismiss": "alert"
+        }).addClass("close").text("×")
+        divMsg.append(buttonClose);
+        container.append(divMsg);
+        $(container).insertAfter("#content>.bootstrap:eq(0)");
+    } else {// Version <= 1.5
+        $('#content>.conf').remove();
+        $('#content>.error').remove();
+
+        var container = $("<div>").addClass("error").text(mensaje);
+        $(container).insertBefore("#content>.cat_bar:eq(0)");
+    }
+
     $("html, body").animate({scrollTop: 0}, 500);
 }
 

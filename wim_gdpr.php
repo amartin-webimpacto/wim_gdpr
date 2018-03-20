@@ -320,6 +320,17 @@ class Wim_gdpr extends Module
                 AND c.id_shop = s.id_shop
                 AND c.id_lang = ' . $language_id . '
                 ORDER BY id_shop ASC, id_cms ASC;';
+
+        if (version_compare(_PS_VERSION_, '1.6', '<') === true) {
+            $sql = 'SELECT c.*, l.name AS languageName, s.name AS shopName, s.id_shop
+                    FROM ' . _DB_PREFIX_ . 'lang l, ' . _DB_PREFIX_ . 'cms_lang c, ' . _DB_PREFIX_ . 'shop s, ' . _DB_PREFIX_ . 'cms_shop cs
+                    WHERE c.id_lang = l.id_lang
+                    AND c.id_lang = 1
+                    AND cs.id_shop = s.id_shop
+                    AND cs.id_cms = c.id_cms
+                    ORDER BY S.id_shop ASC , id_cms ASC;';
+        }
+
         $rows = Db::getInstance()->ExecuteS($sql);
         foreach ($rows as $row) {
             $data[$row["id_shop"]]["id"] = $row["id_shop"];
