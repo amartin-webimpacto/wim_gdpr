@@ -52,6 +52,7 @@ if (!defined('_PS_VERSION_')) {
 class Wim_gdpr extends Module
 {
     protected $config_form = false;
+    public $doubleHook = false; // En PS1.5 ejecutaba dos veces el hook "hookDisplayAdminForm" y se crea esta variable para controlarlo.
 
     public function __construct()
     {
@@ -257,7 +258,6 @@ class Wim_gdpr extends Module
             if (count($languageList) > 0) {
                 foreach ($languageList as $language) {
                     foreach ($shopList as $shop) {
-
                         $newCms = array(
                             'id_cms' => Tools::getValue('id_cms'),
                             'id_shop' => $shop,
@@ -271,7 +271,6 @@ class Wim_gdpr extends Module
                             'modification_reason_for_a_new' => Tools::getValue('modification_reason_for_a_new_' . $language["id_lang"]),
                             'show_to_users' => Tools::getValue('show_to_users'),
                         );
-
                         if (!$this->areCmsEquals(Tools::getValue('id_cms'), $language["id_lang"], null, $shop)) { // Cuando son identicos no se actualiza.
                             if (!$this->addWimGdprCmsVersions($newCms)) {
                                 $this->errors[] = Tools::displayError('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.');
@@ -281,7 +280,7 @@ class Wim_gdpr extends Module
                             $newShowToUsers = Tools::getValue('show_to_users');
                             $lastCmsVersion = $this->getLastCmsVersion(Tools::getValue('id_cms'), $language["id_lang"], $shop);
                             if ($newShowToUsers != $lastCmsVersion["show_to_users"]) {
-                                $newCms['modification_reason_for_a_new'] = $this->l('Apartado \'Mostrar usuarios\' modificado');
+                                $newCms['modification_reason_for_a_new'] = $this->l('Apartado \'Mostrar a usuarios\' modificado');
                                 if (!$this->addWimGdprCmsVersions($newCms)) {
                                     $this->errors[] = Tools::displayError('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.');
                                     return false;
@@ -294,6 +293,21 @@ class Wim_gdpr extends Module
         }
     }
 
+    public function isCmsVersionDuplicated($obj)
+    {
+        $sql = 'SELECT *
+                FROM ' . _DB_PREFIX_ . 'wim_gdpr_cms_versions
+                WHERE id_cms = "' . pSQL($obj["id_cms"]) . '"
+                AND id_shop = "' . pSQL($obj["id_shop"]) . '"
+                AND id_lang = "' . pSQL($obj["id_lang"]) . '"
+                AND id_employee = "' .pSQL($this->context->employee->id) . '"
+                AND modification_reason_for_a_new = "' . pSQL($obj["modification_reason_for_a_new"]) . '"
+                AND show_to_users = "' . pSQL($obj["show_to_users"]) . '"
+                AND date_add = "' . date('Y-m-d H:i:s') . '"';
+
+        return Db::getInstance()->getRow($sql);
+    }
+
     /**
      * Muestra al usuario el popup para aceptar los cambios en los CMS si corresponde
      * @return mixed
@@ -302,11 +316,17 @@ class Wim_gdpr extends Module
     {
         $cmsToAccept = $this->getCmsToShowToUser();
         if (count($cmsToAccept) > 0) {
-            $this->context->controller->addCSS($this->_path . '/views/css/modal.css');
-            $this->context->controller->addJS($this->_path . '/views/js/front.js');
             $this->context->smarty->assign('cmsList', $cmsToAccept);
-            //$this->context->smarty->assign('id_gdpr_cms_version', '1');
-            return $this->display(__FILE__, 'modal.tpl');
+            if (version_compare(_PS_VERSION_, '1.6', '<') === true) {// Prestashop 1.5
+                $this->context->controller->addCSS($this->_path . '/views/css/tingle.min.css');
+                $this->context->controller->addJS($this->_path . '/views/js/tingle.min.js');
+                $this->context->controller->addJS($this->_path . '/views/js/1.5/front.js');
+                return $this->display(__FILE__, 'views/templates/front/modal.tpl');
+            } else { // Prestashop 1.6 en adelante
+                $this->context->controller->addCSS($this->_path . '/views/css/modal.css');
+                $this->context->controller->addJS($this->_path . '/views/js/front.js');
+                return $this->display(__FILE__, 'modal.tpl');
+            }
         }
     }
 
@@ -321,11 +341,11 @@ class Wim_gdpr extends Module
                 AND c.id_lang = ' . $language_id . '
                 ORDER BY id_shop ASC, id_cms ASC;';
 
-        if (version_compare(_PS_VERSION_, '1.6', '<') === true) {
+        if (version_compare(_PS_VERSION_, '1.6', '<') === true) {// Prestashop 1.5
             $sql = 'SELECT c.*, l.name AS languageName, s.name AS shopName, s.id_shop
                     FROM ' . _DB_PREFIX_ . 'lang l, ' . _DB_PREFIX_ . 'cms_lang c, ' . _DB_PREFIX_ . 'shop s, ' . _DB_PREFIX_ . 'cms_shop cs
                     WHERE c.id_lang = l.id_lang
-                    AND c.id_lang = 1
+                    AND c.id_lang = ' . $language_id . '
                     AND cs.id_shop = s.id_shop
                     AND cs.id_cms = c.id_cms
                     ORDER BY S.id_shop ASC , id_cms ASC;';
@@ -406,10 +426,21 @@ class Wim_gdpr extends Module
         $id_cms = $newCms["id_cms"];
         $oldCms = $this->getCms($id_cms, $newCms["id_lang"]);
 
+        if (version_compare(_PS_VERSION_, '1.6', '<') === true) { // Prestashop <= 1.5
+            $newCms['old_meta_title'] = $oldCms["meta_title"];
+            $newCms['old_meta_description'] = $oldCms["meta_description"];
+            $newCms['old_meta_keywords'] = $oldCms["meta_keywords"];
+            $newCms['old_content'] = $oldCms["content"];
+            $newCms['old_link_rewrite'] = $oldCms["link_rewrite"];
+            if ($this->isCmsVersionDuplicated($newCms)) { // Evitar insertar duplicados
+                return true;
+            }
+        }
+
         $win_gdpr_cms_version = array('id_gdpr_cms_version' => 0,
             'id_cms' => pSQL($id_cms),
             'id_shop' => pSQL($newCms["id_shop"]),
-            'id_lang' => pSQL($oldCms["id_lang"]),
+            'id_lang' => pSQL($newCms["id_lang"]),
             'id_employee' => pSQL($this->context->employee->id),
             'old_meta_title' => pSQL($oldCms["meta_title"]),
             'old_meta_description' => pSQL($oldCms["meta_description"]),
@@ -480,6 +511,14 @@ class Wim_gdpr extends Module
                 AND id_shop = ' . (int)$id_shop . '
                 ORDER BY id_cms ASC;';
 
+        if (version_compare(_PS_VERSION_, '1.6', '<') === true) { // Prestashop <= 1.5
+            $sql = 'SELECT c.*, s.id_shop
+                FROM ' . _DB_PREFIX_ . 'cms_lang c, ' . _DB_PREFIX_ . 'cms_shop s
+                WHERE c.id_cms = s.id_cms
+                AND c.id_lang = ' . (int)$id_lang . '
+                AND s.id_shop = ' . (int)$id_shop . '
+                ORDER BY id_cms ASC;';
+        }
         $rows = Db::getInstance()->ExecuteS($sql);
 
         return $rows;
@@ -529,7 +568,6 @@ class Wim_gdpr extends Module
                     FROM ' . _DB_PREFIX_ . 'wim_gdpr_user_aceptance
                     WHERE id_customer = ' . $this->getCurrentCustomer() . '
                 );';
-
         if ($rows = Db::getInstance()->ExecuteS($sql)) {
             foreach ($rows as $row) {
                 $data[] = array(
@@ -598,22 +636,27 @@ class Wim_gdpr extends Module
      */
     public function AreCmsEquals($id_cms, $id_lang, $outputForm = null, $id_shop = null)
     {
-
         if (isset($outputForm)) {
             $id_shop = $outputForm['current_id_shop'];
         }
 
         // Get old CMS
-        $sql = 'SELECT `meta_title`, `meta_description`, `meta_keywords`, `content`, `link_rewrite`
+        if (version_compare(_PS_VERSION_, '1.6', '<') === true) { // Prestashop <= 1.5
+            $sql = 'SELECT `meta_title`, `meta_description`, `meta_keywords`, `content`, `link_rewrite`
+                FROM ' . _DB_PREFIX_ . 'cms_lang
+                WHERE `id_cms` = ' . (int)$id_cms . '
+                AND `id_lang` = ' . (int)$id_lang;
+        } else { // Prestashop >= 1.6
+            $sql = 'SELECT `meta_title`, `meta_description`, `meta_keywords`, `content`, `link_rewrite`
                 FROM ' . _DB_PREFIX_ . 'cms_lang
                 WHERE `id_cms` = ' . (int)$id_cms . '
                 AND `id_lang` = ' . (int)$id_lang . '
                 AND `id_shop` = ' . (int)$id_shop;
+        }
+
         if ($old_cms = Db::getInstance()->getRow($sql)) {
             // Get new CMS
             if (!empty($outputForm)) {
-
-                //$old_cms['content'] =  str_replace("[\n|\r|\n\r|\t|\0|\x0B]", "",$old_cms['content']);
                 $new_cms = array(
                     'meta_title' => $outputForm['meta_title_' . $id_lang],
                     'meta_description' => $outputForm['meta_description_' . $id_lang],
@@ -675,6 +718,11 @@ class Wim_gdpr extends Module
 
     public function hookDisplayAdminForm($params)
     {
+        if (isset($this->doubleHook) && $this->doubleHook) {
+            return "";
+        }
+        $this->doubleHook = true;
+
         $selectedShopList = $this->getContextShop();
         if ($this->isCMSProtected(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), $selectedShopList)) {
             $languageList = LanguageCore::getLanguages();
@@ -683,7 +731,11 @@ class Wim_gdpr extends Module
             $this->smarty->assign('url', __PS_BASE_URI__);
             $this->smarty->assign('current_id_shop', $this->context->shop->id);
 
-            return $this->display(__FILE__, 'views/templates/admin/cms_fields.tpl');
+            if (version_compare(_PS_VERSION_, '1.6', '<') === true) {// Prestashop <= 1.5
+                return $this->display(__FILE__, 'views/templates/admin/cms_fields_1.5.tpl');
+            } else { // Prestashop >= 1.6
+                return $this->display(__FILE__, 'views/templates/admin/cms_fields.tpl');
+            }
         }
     }
 
@@ -698,7 +750,6 @@ class Wim_gdpr extends Module
         $errors = array();
         parse_str($data, $outputForm);
         $cmsShops = $this->getCMSshop($outputForm['id_cms']);
-
         $langs = LanguageCore::getLanguages();
         // Comprobar que se ha insertado un motivo de modificacion
         foreach ($langs as $input) {
@@ -714,7 +765,7 @@ class Wim_gdpr extends Module
             $errors [] = Tools::displayError('El CMS que intenta desactivar se encuentra protegido. Para poder desactivarlo tiene que anular dicha protección en el módulo correspondiente (WebImpacto GDPR)');
         }
 
-        if (count($outputForm['itemShopSelected']) > 0) {
+        if (count($cmsShops) > 0) {
             foreach ($cmsShops as $key => $shop) {
 
                 if (!in_array($shop['id_shop'], $outputForm['itemShopSelected'])) {

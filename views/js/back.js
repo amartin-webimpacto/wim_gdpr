@@ -27,48 +27,98 @@
  */
 
 function showError(mensaje) {
-    var container = $("<div>").addClass("bootstrap");
-    var divMsg = $("<div>").addClass("alert alert-danger").html(mensaje);
-    var buttonClose = $("<button>").attr({
-        type: "button",
-        "data-dismiss": "alert"
-    }).addClass("close").text("×")
-    divMsg.append(buttonClose);
-    container.append(divMsg);
+    if ($("#content>.bootstrap:eq(0)").length) {// Version >= 1.6
+        var container = $("<div>").addClass("bootstrap");
+        var divMsg = $("<div>").addClass("alert alert-danger").html(mensaje);
+        var buttonClose = $("<button>").attr({
+            type: "button",
+            "data-dismiss": "alert"
+        }).addClass("close").text("×")
+        divMsg.append(buttonClose);
+        container.append(divMsg);
 
-    $(container).insertAfter("#content>.bootstrap:eq(0)");
+        $(container).insertAfter("#content>.bootstrap:eq(0)");
+    } else {// Version <= 1.5
+        var container = $("<div>").addClass("error").text(mensaje);
+        $(container).insertBefore("#cms_toolbar");
+    }
 
+    $("html, body").animate({scrollTop: 0}, 500);
 }
 
 $(document).ready(function () {
-    $(function () {
-
-        $('#cms_form button[type="submit"]').on('click', function (e) {
-
-            // content texarea
-            var pagContent = $('.mce-tinymce.mce-container.mce-panel iframe');
+    // Prestashop >= 1.6
+    $('#cms_form button[type="submit"]').on('click', function (e) {
+        // content textarea
+        var pagContent = $('.mce-tinymce.mce-container.mce-panel iframe');
+        pagContent.each(function (index) {
+            var pagContent = $('textarea.rte');
             pagContent.each(function (index) {
-                var pagContent = $('textarea.rte');
-                pagContent.each(function (index) {
-                    var selectorLang = $(this).attr('id');
-                    $(this).text(tinyMCE.get(selectorLang).getContent());
+                var selectorLang = $(this).attr('id');
+                $(this).text(tinyMCE.get(selectorLang).getContent());
 
-                });
+            });
+        });
+
+        //shop tree
+        var inputChecked = $('.panel .tree-folder input:checked');
+        var itemShopSelected = '';
+        if (inputChecked.length) {
+            inputChecked.each(function (index) {
+                var id_shop = $(this).val();
+                itemShopSelected += '&itemShopSelected[' + index + ']=' + id_shop;
+            });
+        }
+
+        var dataForm_serialize = $('#cms_form').serialize();
+        var dataForm = dataForm_serialize + itemShopSelected + '&current_id_shop=' + current_id_shop;
+
+        $.ajax({
+            type: 'POST',
+            headers: {"cache-control": "no-cache"},
+            url: url + 'modules/wim_gdpr/ajax.php' + '?rand=' + new Date().getTime(),
+            data: {
+                action: "validationForm",
+                data: dataForm
+            },
+            dataType: 'json',
+            async: false,
+            success: function (jsonData) {
+                $('.alert.alert-danger, .alert.alert-success').remove();
+                if (typeof jsonData !== 'undefined' && jsonData.length > 0) {
+                    e.preventDefault();
+                    jsonData.forEach(function (error, index) {
+                        showError(error);
+                    });
+
+                    $("html, body").animate({scrollTop: 0}, 500);
+                }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                // error en el servidor
+                showError("Ha ocurrido un error inesperado en el servidor.");
+            }
+        });
+    });
+
+
+    // Prestashop <= 1.5
+    setTimeout(function () {// Hay que hacerlo así porque se sobreescribe el evento click
+        $('#desc-cms-save-and-preview, #desc-cms-save-and-stay, #desc-cms-save').off("click");
+
+        $('#desc-cms-save-and-preview, #desc-cms-save-and-stay, #desc-cms-save').on('click', function (e) {
+            // content textarea
+            $('textarea.rte').each(function () {
+                var selectorLang = $(this).attr('id');
+                $(this).text(tinyMCE.get(selectorLang).getContent());
             });
 
-            /*
-             var dataForm_serialize =  $('#cms_form').serializeArray();
-             dataForm.push({ name: "current_id_shop", value: current_id_shop });
-             */
-
             //shop tree
-
-
-            var inputChecked = $('.panel .tree-folder input:checked');
+            var inputChecked = $('.input_shop:checked');
             var itemShopSelected = '';
             if (inputChecked.length) {
                 inputChecked.each(function (index) {
-                    var id_shop = $(this).val();
+                    var id_shop = $(this).attr("shop_id");
                     itemShopSelected += '&itemShopSelected[' + index + ']=' + id_shop;
                 });
             }
@@ -85,16 +135,21 @@ $(document).ready(function () {
                     data: dataForm
                 },
                 dataType: 'json',
-                async: false,
                 success: function (jsonData) {
                     $('.alert.alert-danger, .alert.alert-success').remove();
                     if (typeof jsonData !== 'undefined' && jsonData.length > 0) {
                         e.preventDefault();
+
+                        $('#content>.conf').remove();
+                        $('#content>.error').remove();
+
                         jsonData.forEach(function (error, index) {
                             showError(error);
                         });
 
                         $("html, body").animate({scrollTop: 0}, 500);
+                    } else {
+                        $("#cms_form").submit();
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -103,5 +158,6 @@ $(document).ready(function () {
                 }
             });
         });
-    });
+    }, 50);
+
 });

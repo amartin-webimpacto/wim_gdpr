@@ -59,7 +59,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'wim_gdpr_user_aceptance
   `date_add` DATETIME NOT NULL,
   PRIMARY KEY (`id_customer`, `id_gdpr_cms_version`),
   INDEX `fk_id_gdpr_cms_version_idx` (`id_gdpr_cms_version` ASC))
-  ENGINE=\' . _MYSQL_ENGINE_ . \' DEFAULT CHARSET=utf8;';
+  ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
 
 foreach ($sql as $query) {
