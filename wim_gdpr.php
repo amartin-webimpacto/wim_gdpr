@@ -123,6 +123,11 @@ class Wim_gdpr extends Module
         ));
 
         $this->context->smarty->assign('gdpr_list', $this->getGDPRList());
+        if (version_compare(_PS_VERSION_, '1.7', '<') === true) {// Prestashop 1.6 / 1.5
+            $this->context->smarty->assign('ps_version', "1.6");
+        }else{// Prestashop 1.7
+            $this->context->smarty->assign('ps_version', "1.7");
+        }
         $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
 
         return $output;
@@ -275,7 +280,7 @@ class Wim_gdpr extends Module
                         );
                         if (!$this->areCmsEquals(Tools::getValue('id_cms'), $language["id_lang"], null, $shop)) { // Cuando son identicos no se actualiza.
                             if (!$this->addWimGdprCmsVersions($newCms)) {
-                                $this->errors[] = Tools::displayError('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.');
+                                $this->errors[] = Tools::displayError($this->l('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.'));
                                 return false;
                             }
                         } else {
@@ -284,7 +289,7 @@ class Wim_gdpr extends Module
                             if ($newShowToUsers != $lastCmsVersion["show_to_users"]) {
                                 $newCms['modification_reason_for_a_new'] = $this->l('Apartado \'Mostrar a usuarios\' modificado');
                                 if (!$this->addWimGdprCmsVersions($newCms)) {
-                                    $this->errors[] = Tools::displayError('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.');
+                                    $this->errors[] = Tools::displayError($this->l('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.'));
                                     return false;
                                 }
                             }
@@ -763,20 +768,20 @@ class Wim_gdpr extends Module
         foreach ($langs as $input) {
             if (!$this->AreCmsEquals($outputForm['id_cms'], $input['id_lang'], $outputForm)) {
                 if ($outputForm['modification_reason_for_a_new_' . $input['id_lang']] == "") {
-                    $errors [] = Tools::displayError('Debe indicar el motivo de la modificación de este CMS para el idioma ' . $input['name'] . '.');
+                    $errors [] = Tools::displayError($this->l('Debe indicar el motivo de la modificación de este CMS para el idioma ' . $input['name'] . '.'));
                 }
             }
         }
 
         // Comprobar que no se desactive un CMS protegido
         if ($outputForm['active'] == 0) {
-            $errors [] = Tools::displayError('El CMS que intenta desactivar se encuentra protegido. Para poder desactivarlo tiene que anular dicha protección en el módulo correspondiente (WebImpacto GDPR)');
+            $errors [] = Tools::displayError($this->l('El CMS que intenta desactivar se encuentra protegido. Para poder desactivarlo tiene que anular dicha protección en el módulo correspondiente (WebImpacto GDPR)'));
         }
 
         if (count($cmsShops) > 1) { // Si es multitienda...
             foreach ($cmsShops as $key => $shop) {
                 if (!in_array($shop['id_shop'], $outputForm['itemShopSelected'])) {
-                    $errors [] = Tools::displayError('No pude desmarcar una tienda que ha sido marcada con contenido protegido (Tienda : ' . $shop['name'] . ')');
+                    $errors [] = Tools::displayError($this->l('No pude desmarcar una tienda que ha sido marcada con contenido protegido (Tienda : ' . $shop['name'] . ')'));
                 }
             }
         }

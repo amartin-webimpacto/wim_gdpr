@@ -24,12 +24,14 @@
 *}
 
 <div class="panel">
-    <h3>{l s='WebImpacto GDPR' mod='wim_gdpr'}: CONFIGURACIÓN ADICIONAL</h3>
-    Al instalar este módulo, hay que editar el template del CMS del tema en uso.
+    <h3>{l s='WebImpacto GDPR' mod='wim_gdpr'}: {l s='CONFIGURACIÓN ADICIONAL'}</h3>
+    {l s='Al instalar este módulo, hay que editar el template del CMS del tema en uso.'}
+    {if $ps_version == "1.7"}
     <h4>PRESTASHOP 1.7</h4>
-    - El fichero en cuestión se encuentra en la ruta <code>themes/[nombre-del-tema]/templates/cms/page.tpl</code>
+    - {l s='El fichero en cuestión se encuentra en la ruta'}
+    <code>themes/[nombre-del-tema]/templates/cms/page.tpl</code>
     <br/>
-    - Justo encima del siguiente bloque de texto....
+    - {l s='Justo encima del siguiente bloque de texto....'}
     <br/>
     <code>
         {literal}
@@ -43,11 +45,11 @@
         {/literal}
     </code>
     <br/>
-    - Se debe añadir la siguiente línea:
+    - {l s='Se debe añadir la siguiente línea'}:
     <br/>
     {literal}<code>{hook h='displayCMSHistory'}</code>{/literal}
     <br/>
-    - Quedando algo parecido a:
+    - {l s='Quedando algo parecido a'}:
     <br/>
     {literal}
         <code>
@@ -63,11 +65,12 @@
         </code>
     {/literal}
     <br/>
-
+    {/if}
+    {if $ps_version == "1.6"}
     <h4>PRESTASHOP 1.6 y 1.5</h4>
-    - El fichero en cuestión se encuentra en la ruta <code>themes/[nombre-del-tema]/cms.tpl</code>
+    - {l s='El fichero en cuestión se encuentra en la ruta'} <code>themes/[nombre-del-tema]/cms.tpl</code>
     <br/>
-    - Justo encima del siguiente bloque de texto....
+    - {l s='Justo encima del siguiente bloque de texto....'}
     <br/>
     <code>
         {literal}
@@ -79,11 +82,11 @@
         {/literal}
     </code>
     <br/>
-    - Se debe añadir la siguiente línea:
+    - {l s='Se debe añadir la siguiente línea'}:
     <br/>
     {literal}<code>{hook h='displayCMSHistory'}</code>{/literal}
     <br/>
-    - Quedando algo parecido a:
+    - {l s='Quedando algo parecido a'}:
     <br/>
     {literal}
         <code>
@@ -97,12 +100,13 @@
         </code>
     {/literal}
     <br/>
-    La ejecución de este hook mostrará el histórico de cambios del CMS en cuestión.
+    {/if}
+    {l s='La ejecución de este hook mostrará el histórico de cambios del CMS en cuestión.'}
 
 </div>
 
 <div class="panel">
-    <h3>{l s='WebImpacto GDPR' mod='wim_gdpr'} General Data Protection Regulation</h3>
+    <h3>WebImpacto GDPR General Data Protection Regulation</h3>
 
     <form id="module_form" class="defaultForm form-horizontal"
           action="index.php?controller=AdminModules&amp;configure=wim_gdpr&amp;tab_module=others&amp;module_name=wim_gdpr&amp;token={$token}"
@@ -114,7 +118,7 @@
                 <tr>
                     <th scope="col"><b>#</b></th>
                     <th scope="col"><b>{$shop.name}</b></th>
-                    <th scope="col"><b>Protegido</b></th>
+                    <th scope="col"><b>{l s='Protegido'}</b></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -135,7 +139,7 @@
         <div class="panel-footer">
             <button onclick="submitForm()" value="1" id="module_form_submit_btn" name="submitWim_gdprModule"
                     class="btn btn-default pull-right">
-                <i class="process-icon-save"></i> Guardar
+                <i class="process-icon-save"></i> {l s='Guardar'}
             </button>
         </div>
     </form>
