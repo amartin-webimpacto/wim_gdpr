@@ -252,41 +252,40 @@ class Wim_gdpr extends Module
             $shopList[] = $shop;
         }
 
+        $languageList = LanguageCore::getLanguages();
+
         // Tras la validación realizada por AJAX, aquí sólo nos queda comprobar si el CMS está protegido. De ser así, se guardará su versión en BBDD.
-        if ($this->isCMSProtected((int)Tools::getValue('id_cms'))) {
-            $languageList = LanguageCore::getLanguages();
-            if (count($languageList) > 0) {
-                foreach ($languageList as $language) {
-                    foreach ($shopList as $shop) {
-                        $listaAuxiliarShop[] = $shop;
-                        if ($this->isCMSProtected((int)Tools::getValue('id_cms'), $listaAuxiliarShop)) {
-                            $newCms = array(
-                                'id_cms' => Tools::getValue('id_cms'),
-                                'id_shop' => $shop,
-                                'id_lang' => $language["id_lang"],
-                                'id_employee' => Tools::getValue('id_employee'),
-                                'new_meta_title' => Tools::getValue('meta_title_' . $language["id_lang"]),
-                                'new_meta_description' => Tools::getValue('meta_description_' . $language["id_lang"]),
-                                'new_meta_keywords' => Tools::getValue('meta_keywords_' . $language["id_lang"]),
-                                'new_content' => Tools::getValue('content_' . $language["id_lang"]),
-                                'new_link_rewrite' => Tools::getValue('link_rewrite_' . $language["id_lang"]),
-                                'modification_reason_for_a_new' => Tools::getValue('modification_reason_for_a_new_' . $language["id_lang"]),
-                                'show_to_users' => Tools::getValue('show_to_users'),
-                            );
-                            if (!$this->areCmsEquals(Tools::getValue('id_cms'), $language["id_lang"], null, $shop)) { // Cuando son identicos no se actualiza.
+        if (count($languageList) > 0 && $this->isCMSProtected((int)Tools::getValue('id_cms'))) {
+            foreach ($languageList as $language) {
+                foreach ($shopList as $shop) {
+                    $listaAuxiliarShop[0] = $shop;
+                    if ($this->isCMSProtected((int)Tools::getValue('id_cms'), $listaAuxiliarShop)) {
+                        $newCms = array(
+                            'id_cms' => Tools::getValue('id_cms'),
+                            'id_shop' => $shop,
+                            'id_lang' => $language["id_lang"],
+                            'id_employee' => Tools::getValue('id_employee'),
+                            'new_meta_title' => Tools::getValue('meta_title_' . $language["id_lang"]),
+                            'new_meta_description' => Tools::getValue('meta_description_' . $language["id_lang"]),
+                            'new_meta_keywords' => Tools::getValue('meta_keywords_' . $language["id_lang"]),
+                            'new_content' => Tools::getValue('content_' . $language["id_lang"]),
+                            'new_link_rewrite' => Tools::getValue('link_rewrite_' . $language["id_lang"]),
+                            'modification_reason_for_a_new' => Tools::getValue('modification_reason_for_a_new_' . $language["id_lang"]),
+                            'show_to_users' => Tools::getValue('show_to_users'),
+                        );
+                        if (!$this->areCmsEquals(Tools::getValue('id_cms'), $language["id_lang"], null, $shop)) { // Cuando son identicos no se actualiza.
+                            if (!$this->addWimGdprCmsVersions($newCms)) {
+                                $this->errors[] = Tools::displayError('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.');
+                                return false;
+                            }
+                        } else {
+                            $newShowToUsers = Tools::getValue('show_to_users');
+                            $lastCmsVersion = $this->getLastCmsVersion(Tools::getValue('id_cms'), $language["id_lang"], $shop);
+                            if ($newShowToUsers != $lastCmsVersion["show_to_users"]) {
+                                $newCms['modification_reason_for_a_new'] = $this->l('Apartado \'Mostrar a usuarios\' modificado');
                                 if (!$this->addWimGdprCmsVersions($newCms)) {
                                     $this->errors[] = Tools::displayError('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.');
                                     return false;
-                                }
-                            } else {
-                                $newShowToUsers = Tools::getValue('show_to_users');
-                                $lastCmsVersion = $this->getLastCmsVersion(Tools::getValue('id_cms'), $language["id_lang"], $shop);
-                                if ($newShowToUsers != $lastCmsVersion["show_to_users"]) {
-                                    $newCms['modification_reason_for_a_new'] = $this->l('Apartado \'Mostrar a usuarios\' modificado');
-                                    if (!$this->addWimGdprCmsVersions($newCms)) {
-                                        $this->errors[] = Tools::displayError('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.');
-                                        return false;
-                                    }
                                 }
                             }
                         }
@@ -601,8 +600,9 @@ class Wim_gdpr extends Module
         $sql = 'SELECT show_to_users
                 FROM ' . _DB_PREFIX_ . 'wim_gdpr_cms_versions
                 WHERE id_cms = ' . $id_cms . '
-                AND id_shop =  ' . $id_shop . '
+                AND id_shop IN(' . implode(",", $id_shop) . ')
                 ORDER BY id_gdpr_cms_version DESC';
+
         if ($row = Db::getInstance()->getRow($sql)) {
             return $row['show_to_users'];
         }
@@ -735,7 +735,7 @@ class Wim_gdpr extends Module
         if ($this->isCMSProtected(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), $selectedShopList)) {
             $languageList = LanguageCore::getLanguages();
             $this->smarty->assign('languageList', $languageList);
-            $this->smarty->assign('show_to_users', $this->getCmsShowToUserValue(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), $this->context->shop->id));
+            $this->smarty->assign('show_to_users', $this->getCmsShowToUserValue(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), $this->getContextShop()));
             $this->smarty->assign('url', __PS_BASE_URI__);
             $this->smarty->assign('current_id_shop', $this->context->shop->id);
 
