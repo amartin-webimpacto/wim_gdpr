@@ -7,7 +7,7 @@
                     REGULATION</h5>
             </div>
             {*{assign var=cms_version_list value=""}*}
-            {foreach from=$cms item=cms_version}
+            {foreach from=$cmsList item=cms_version}
                 <input class="hidden_cms" type="hidden" value="{$cms_version.id_gdpr_cms_version}"/>
                 <div class="modal-body">
                     <b>Título: </b>{$cms_version.title}
@@ -40,3 +40,5 @@
         </div>
     </div>
 </div>
+
+<script>var baseDir = "{$urls.base_url}";</script>

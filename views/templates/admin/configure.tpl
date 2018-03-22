@@ -26,7 +26,45 @@
 <div class="panel">
     <h3>{l s='WebImpacto GDPR' mod='wim_gdpr'}: CONFIGURACIÓN ADICIONAL</h3>
     Al instalar este módulo, hay que editar el template del CMS del tema en uso.
+    <h4>PRESTASHOP 1.7</h4>
+    - El fichero en cuestión se encuentra en la ruta <code>themes/[nombre-del-tema]/templates/cms/page.tpl</code>
     <br/>
+    - Justo encima del siguiente bloque de texto....
+    <br/>
+    <code>
+        {literal}
+            &lt;section id="content" class="page-content page-cms page-cms-{$cms.id}">
+            <br/>
+            {block name='cms_content'}
+            <br/>
+            {$cms.content nofilter}
+            <br/>
+            {/block}
+        {/literal}
+    </code>
+    <br/>
+    - Se debe añadir la siguiente línea:
+    <br/>
+    {literal}<code>{hook h='displayCMSHistory'}</code>{/literal}
+    <br/>
+    - Quedando algo parecido a:
+    <br/>
+    {literal}
+        <code>
+            {hook h='displayCMSHistory'}
+            <br/>
+            &lt;section id="content" class="page-content page-cms page-cms-{$cms.id}">
+            <br/>
+            {block name='cms_content'}
+            <br/>
+            {$cms.content nofilter}
+            <br/>
+            {/block}
+        </code>
+    {/literal}
+    <br/>
+
+    <h4>PRESTASHOP 1.6 y 1.5</h4>
     - El fichero en cuestión se encuentra en la ruta <code>themes/[nombre-del-tema]/cms.tpl</code>
     <br/>
     - Justo encima del siguiente bloque de texto....
@@ -35,7 +73,7 @@
         {literal}
             &lt;div class="rte{if $content_only} content_only{/if}">
             <br/>
-                {$cms->content}
+            {$cms->content}
             <br/>
             &lt;/div>
         {/literal}
@@ -53,7 +91,7 @@
             <br/>
             &lt;div class="rte{if $content_only} content_only{/if}">
             <br/>
-                {$cms->content}
+            {$cms->content}
             <br/>
             &lt;/div>
         </code>

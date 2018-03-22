@@ -40,7 +40,7 @@ function trSelectCheckbox() {
 function submitForm() {
     var json = generateJSON();
     var form = $("#module_form");
-    var hiddenInput = $("input").attr({
+    var hiddenInput = $("<input>").attr({
         id: "WIM_GDPR_CMS_LIST",
         name: "WIM_GDPR_CMS_LIST",
         type: "hidden"
