@@ -1,0 +1,12 @@
+.gdpr_check_list{
+
+}
+.gdpr_check_list li{
+
+}
+.gdpr_check_list .checker{
+    display: inline!important;
+}
+.gdpr_check_list a{
+    text-transform: uppercase;
+}
