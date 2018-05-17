@@ -279,6 +279,7 @@ class Wim_gdpr extends Module
         $cmsToAccept = WimGdprCmsVersion::getCmsToShowToUser();
         if (count($cmsToAccept) > 0) {
             $this->context->smarty->assign('cmsList', $cmsToAccept);
+            $this->smarty->assign('url', __PS_BASE_URI__);
             if (version_compare(_PS_VERSION_, '1.6', '<') === true) {// Prestashop 1.5
                 $this->context->controller->addCSS($this->_path . '/views/css/tingle.min.css');
                 $this->context->controller->addJS($this->_path . '/views/js/tingle.min.js');

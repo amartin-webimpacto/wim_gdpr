@@ -41,4 +41,4 @@
     </div>
 </div>
 
-<script>var baseDir = "{$urls.base_url}";</script>
+<script>var baseDir = "{$url}";</script>
