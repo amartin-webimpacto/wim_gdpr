@@ -12,7 +12,6 @@ switch (Tools::getValue('action')) {
         break;
     case 'getCms' :
         $cmsVersion = WimGdprCmsVersion::get(Tools::getValue("id_gdpr_cms_version"));
-        die($cmsVersion["new_content"]);
         break;
     case 'validationForm' :
         $validationForm = $module->validationForm(Tools::getValue("data"));

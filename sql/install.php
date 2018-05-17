@@ -57,10 +57,14 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'wim_gdpr_user_acceptanc
   `id_customer` INT(10) UNSIGNED NOT NULL,
   `id_gdpr_cms_version` INT UNSIGNED NOT NULL,
   `date_add` DATETIME NOT NULL,
+  `ip_address` VARCHAR(45) NOT NULL,
+  `user_agent` VARCHAR(255) NOT NULL,
+  `user_browser` VARCHAR(150) NOT NULL,
+  `user_platform` VARCHAR(150) NOT NULL,
+  `url_on_acceptance` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id_customer`, `id_gdpr_cms_version`),
   INDEX `fk_id_gdpr_cms_version_idx` (`id_gdpr_cms_version` ASC))
   ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
 
 
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'wim_gdpr_action_acceptance` (
@@ -68,6 +72,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'wim_gdpr_action_accepta
   `id_guest` INT(10) UNSIGNED,
   `id_customer` INT(10) UNSIGNED,
   `id_gdpr_cms_version` INT UNSIGNED NOT NULL,
+  `id_cms` INT(10) UNSIGNED NULL,
   `date_add` DATETIME NOT NULL,
   `ip_address` VARCHAR(45) NOT NULL,
   `user_agent` VARCHAR(255) NOT NULL,

@@ -75,17 +75,19 @@ class GdprTools extends ObjectModel
         }
         $id_shop = Context::getContext()->shop->id;
 
-        $sql = 'SELECT *
-                FROM `' . _DB_PREFIX_ . 'cms_lang`
-                WHERE `id_cms` = ' . (int)$id_cms . '
-                AND `id_lang` = ' . (int)$id_lang . '
-                AND `id_shop` = ' . (int)$id_shop;
+        $sql = 'SELECT cl.*, c.`active`
+                FROM `' . _DB_PREFIX_ . 'cms_lang` cl, `'._DB_PREFIX_.'cms` c
+                WHERE cl.`id_cms` = c.`id_cms`
+                AND cl.`id_cms` = ' . (int)$id_cms . '
+                AND cl.`id_lang` = ' . (int)$id_lang . '
+                AND cl.`id_shop` = ' . (int)$id_shop;
 
         if (version_compare(_PS_VERSION_, '1.6', '<') === true) { // Prestashop <= 1.5
-            $sql = 'SELECT *
-                    FROM `' . _DB_PREFIX_ . 'cms_lang`
-                    WHERE `id_cms` = ' . (int)$id_cms . '
-                    AND `id_lang` = ' . (int)$id_lang;
+            $sql = 'SELECT cl.*, c.`active`
+                    FROM `' . _DB_PREFIX_ . 'cms_lang` cl, `'._DB_PREFIX_.'cms` c
+                    WHERE cl.`id_cms` = c.`id_cms`
+                    AND cl.`id_cms` = ' . (int)$id_cms . '
+                    AND cl.`id_lang` = ' . (int)$id_lang;
         }
         return Db::getInstance()->getRow($sql);
     }
@@ -98,19 +100,21 @@ class GdprTools extends ObjectModel
         $id_lang = Context::getContext()->language->id;
         $id_shop = Context::getContext()->shop->id;
 
-        $sql = 'SELECT *
-                FROM ' . _DB_PREFIX_ . 'cms_lang
-                WHERE id_lang = ' . (int)$id_lang . '
-                AND id_shop = ' . (int)$id_shop . '
-                ORDER BY id_cms ASC;';
+        $sql = 'SELECT cl.*, c.`active`
+                FROM ' . _DB_PREFIX_ . 'cms_lang cl, ' . _DB_PREFIX_ . 'cms c
+                WHERE cl.id_cms = c.id_cms
+                AND cl.id_lang = ' . (int)$id_lang . '
+                AND cl.id_shop = ' . (int)$id_shop . '
+                ORDER BY cl.id_cms ASC;';
 
         if (version_compare(_PS_VERSION_, '1.6', '<') === true) { // Prestashop <= 1.5
-            $sql = 'SELECT c.*, s.id_shop
-                FROM ' . _DB_PREFIX_ . 'cms_lang c, ' . _DB_PREFIX_ . 'cms_shop s
+            $sql = 'SELECT c.*, s.id_shop, cms.`active`
+                FROM ' . _DB_PREFIX_ . 'cms_lang c, ' . _DB_PREFIX_ . 'cms_shop s, ' . _DB_PREFIX_ . 'cms cms
                 WHERE c.id_cms = s.id_cms
+                AND cms.id_cms = c.id_cms
                 AND c.id_lang = ' . (int)$id_lang . '
                 AND s.id_shop = ' . (int)$id_shop . '
-                ORDER BY id_cms ASC;';
+                ORDER BY c.id_cms ASC;';
         }
         $rows = Db::getInstance()->ExecuteS($sql);
 

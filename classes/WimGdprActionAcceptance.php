@@ -6,6 +6,7 @@ class WimGdprActionAcceptance extends ObjectModel
     public $id_guest;
     public $id_customer;
     public $id_gdpr_cms_version;
+    public $id_cms;
     public $date_add;
     public $ip_address;
     public $user_agent;
@@ -19,6 +20,7 @@ class WimGdprActionAcceptance extends ObjectModel
     public static $ddbb_field_id_guest = 'id_guest';
     public static $ddbb_field_id_customer = 'id_customer';
     public static $ddbb_field_id_gdpr_cms_version = 'id_gdpr_cms_version';
+    public static $ddbb_field_id_cms = 'id_cms';
     public static $ddbb_field_date_add = 'date_add';
     public static $ddbb_field_ip_address = 'ip_address';
     public static $ddbb_field_user_agent = 'user_agent';
@@ -27,11 +29,12 @@ class WimGdprActionAcceptance extends ObjectModel
     public static $ddbb_field_url_on_acceptance = 'url_on_acceptance';
 
 
-    public function __construct($id_gdpr_cms_version = null, $id_gdpr_action_acceptance = null, $id_guest = null, $id_customer = null, $date_add = null,
+    public function __construct($id_gdpr_cms_version = null, $id_cms = null, $id_gdpr_action_acceptance = null, $id_guest = null, $id_customer = null, $date_add = null,
                                 $ip_address = null, $user_agent = null, $user_browser = null, $user_platform = null, $url_on_acceptance = null)
     {
         $this->id_gdpr_action_acceptance = ($id_gdpr_action_acceptance != null ? id_gdpr_action_acceptance : 0 );
-        $this->id_gdpr_cms_version =       ($id_gdpr_cms_version != null       ? $id_gdpr_cms_version      : '' );
+        $this->id_gdpr_cms_version =       ($id_gdpr_cms_version != null       ? $id_gdpr_cms_version      : 0 );
+        $this->id_cms =                    ($id_cms != null                    ? $id_cms                   : 0 );
         $this->id_guest =                  ($id_guest != null                  ? $id_guest                 : Context::getContext()->customer->id_guest );
         $this->id_customer =               ($id_customer != null               ? $id_customer              : GdprTools::getCurrentCustomer() );
         $this->date_add =                  ($date_add != null                  ? $date_add                 : date('Y-m-d H:i:s') );
@@ -49,6 +52,7 @@ class WimGdprActionAcceptance extends ObjectModel
             WimGdprActionAcceptance::$ddbb_field_id_guest => $this->id_guest,
             WimGdprActionAcceptance::$ddbb_field_id_customer => $this->id_customer,
             WimGdprActionAcceptance::$ddbb_field_id_gdpr_cms_version => $this->id_gdpr_cms_version,
+            WimGdprActionAcceptance::$ddbb_field_id_cms => $this->id_cms,
             WimGdprActionAcceptance::$ddbb_field_date_add => pSQL($this->date_add),
             WimGdprActionAcceptance::$ddbb_field_ip_address => pSQL($this->ip_address),
             WimGdprActionAcceptance::$ddbb_field_user_agent => pSQL($this->user_agent),
@@ -59,7 +63,7 @@ class WimGdprActionAcceptance extends ObjectModel
         return (Db::getInstance()->insert(WimGdprActionAcceptance::$ddbb_table, $wim_gdpr_action_acceptance));
     }
 
-    public function add($id_gdpr_cms_version)
+   /* public function add($id_gdpr_cms_version)
     {
         $tools = new GdprTools();
 
@@ -77,7 +81,7 @@ class WimGdprActionAcceptance extends ObjectModel
         );
         return (Db::getInstance()->insert(WimGdprActionAcceptance::$ddbb_table, $wim_gdpr_action_acceptance));
     }
-
+*/
     public function get()
     {
 
