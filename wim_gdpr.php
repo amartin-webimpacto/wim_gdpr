@@ -271,7 +271,6 @@ class Wim_gdpr extends Module
      */
     public function hookDisplayHeader()
     {
-
         $this->context->controller->addJS($this->_path . '/views/js/front.js');
         $this->context->controller->addCSS($this->_path . '/views/css/front.css');
         $this->context->controller->addCSS($this->_path . '/views/css/gdpr_checks.css');
