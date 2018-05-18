@@ -7,6 +7,8 @@ class WimGdprActionAcceptance extends ObjectModel
     public $id_customer;
     public $id_gdpr_cms_version;
     public $id_cms;
+    public $id_shop;
+    public $id_lang;
     public $date_add;
     public $ip_address;
     public $user_agent;
@@ -21,6 +23,8 @@ class WimGdprActionAcceptance extends ObjectModel
     public static $ddbb_field_id_customer = 'id_customer';
     public static $ddbb_field_id_gdpr_cms_version = 'id_gdpr_cms_version';
     public static $ddbb_field_id_cms = 'id_cms';
+    public static $ddbb_field_id_shop = 'id_shop';
+    public static $ddbb_field_id_lang = 'id_lang';
     public static $ddbb_field_date_add = 'date_add';
     public static $ddbb_field_ip_address = 'ip_address';
     public static $ddbb_field_user_agent = 'user_agent';
@@ -43,6 +47,8 @@ class WimGdprActionAcceptance extends ObjectModel
         $this->user_browser =              ($user_browser != null              ? $user_browser             : GdprTools::getUserBrowser() );
         $this->user_platform =             ($user_platform != null             ? $user_platform            : GdprTools::getUserPlatform() );
         $this->url_on_acceptance =         ($url_on_acceptance != null         ? $url_on_acceptance        : GdprTools::getURLOnAcceptance() );
+        $this->id_shop = Shop::getContextShopID();
+        $this->id_lang = Context::getContext()->language->id;
     }
 
     public function save()
@@ -53,6 +59,8 @@ class WimGdprActionAcceptance extends ObjectModel
             WimGdprActionAcceptance::$ddbb_field_id_customer => $this->id_customer,
             WimGdprActionAcceptance::$ddbb_field_id_gdpr_cms_version => $this->id_gdpr_cms_version,
             WimGdprActionAcceptance::$ddbb_field_id_cms => $this->id_cms,
+            WimGdprActionAcceptance::$ddbb_field_id_shop => $this->id_shop,
+            WimGdprActionAcceptance::$ddbb_field_id_lang => $this->id_lang,
             WimGdprActionAcceptance::$ddbb_field_date_add => pSQL($this->date_add),
             WimGdprActionAcceptance::$ddbb_field_ip_address => pSQL($this->ip_address),
             WimGdprActionAcceptance::$ddbb_field_user_agent => pSQL($this->user_agent),

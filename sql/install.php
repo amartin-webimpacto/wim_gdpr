@@ -73,6 +73,8 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'wim_gdpr_action_accepta
   `id_customer` INT(10) UNSIGNED,
   `id_gdpr_cms_version` INT UNSIGNED NOT NULL,
   `id_cms` INT(10) UNSIGNED NULL,
+  `id_shop` INT(11) UNSIGNED NULL,
+  `id_lang` INT(10) UNSIGNED NULL,
   `date_add` DATETIME NOT NULL,
   `ip_address` VARCHAR(45) NOT NULL,
   `user_agent` VARCHAR(255) NOT NULL,
