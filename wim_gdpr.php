@@ -252,7 +252,9 @@ class Wim_gdpr extends Module
                             $newShowToUsers = Tools::getValue('show_to_users');
                             $lastCmsVersion = WimGdprCmsVersion::getLast(Tools::getValue('id_cms'), $language["id_lang"], $shop);
                             if ($newShowToUsers != $lastCmsVersion["show_to_users"]) {
-                                $newCms['modification_reason_for_a_new'] = $this->l('Apartado \'Mostrar a usuarios\' modificado');
+                                if ($newCms['modification_reason_for_a_new'] == "" || $newCms['modification_reason_for_a_new'] == null) {
+                                    $newCms['modification_reason_for_a_new'] = $this->l('Apartado \'Mostrar a usuarios\' modificado');
+                                }
                                 if (!WimGdprCmsVersion::add($newCms)) {
                                     $this->errors[] = Tools::displayError($this->l('No se ha podido actualizar la tabla \' wim_gdpr_cms_versions\'.'));
                                     return false;
@@ -358,21 +360,24 @@ class Wim_gdpr extends Module
         return $this->display(__FILE__, 'views/templates/front/gdpr_checks.tpl');
     }
 
-    public function hookActionDispatcher(){
+    public function hookActionDispatcher()
+    {
         $list = Tools::getValue('check_cms_list');
-        if(!$list){$list = null;}
+        if (!$list) {
+            $list = null;
+        }
 
         $total = Tools::getValue('check_cms_list_count');
-        if(count($list) < $total){
+        if (count($list) < $total) {
             $this->context->controller->errors[] = 'Debe aceptar las condiciones';
             return '';
         }
 
-        foreach($list as $id_cms) {
+        foreach ($list as $id_cms) {
             $lastVersion = WimGdprCmsVersion::getLast($id_cms, Context::getContext()->language->id, Context::getContext()->shop->id);
             $id_gdpr_cms_version = $lastVersion[WimGdprCmsVersion::$ddbb_field_id_gdpr_cms_version];
 
-            $actionAcceptance = new WimGdprActionAcceptance($id_gdpr_cms_version , $id_cms);
+            $actionAcceptance = new WimGdprActionAcceptance($id_gdpr_cms_version, $id_cms);
             $actionAcceptance->save();
         }
     }
