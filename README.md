@@ -1,3 +1,4 @@
+
 # WebImpacto GDPR
 
 ## Base de datos
@@ -252,6 +253,11 @@ Cuando editamos un CMS protegido, se mostrarán dos campos nuevos:
 	 - Se muestra en el CMS en el front la razón de cambio y se pedirá aceptación por parte de los usuarios si es la última versión.
 	 - Se muestra en el CMS en el front la razón de cambio pero NO pedirá aceptación por parte de los usuarios si es la última versión.
 
+##### Acciones en la BBDD:
+Al editar un CMS, se realizará una inserción en la tabla wim_gdpr_cms_versions por cada: 
+ - Tienda seleccionada: Se puede estar trabajando sobre una sola tienda, sobre un grupo de tiendas o sobre todas las tiendas.
+ -  Idioma modificado: Teniendo en cuenta los campos multilenguaje. Si se modifica el campo "Mostrar a usuarios", se realizará una inserción por cada idioma.
+
 ## FrontOffice
 
 ### Aceptación de cambios en un CMS
@@ -265,10 +271,16 @@ El popup tendrá un botón para aceptar todos los CMS.
 
 Cada modificación de un CMS se aceptará una sola  vez y no se volverá a pedir aceptación hasta que el CMS vuelva a ser actualizado.
 
+##### Acciones en BBDD:
+Al aceptar los cambios en los CMS, se realizará una inserción en la tabla wim_gdpr_user_acceptance por cada CMS que se esté aceptando.
+
 ### Aceptación de un CMS al enviar un formulario
 Mediante el hookDisplayWimGdprChecks se podrán mostrar ciertos CMS al usuario para que los acepte antes de realizar una acción (por ejemplo, aceptar ciertas condiciones al enviar un formulario de contacto).
 
 El CMS se aceptará cada vez que se vaya a realizar la acción en cuestión.
+
+##### Acciones en BBDD:
+Al aceptar las condiciones de los CMS al enviar un formulario, se realizará una inserción en la tabla wim_gdpr_action_acceptance por cada CMS que se esté aceptando.
 
 ### Página de CMS
 Mediante el hookDisplayCMSHistory, en la parte superior de la página de un CMS protegido se mostrará su histórico de cambios, indicando el motivo de la modificación.
