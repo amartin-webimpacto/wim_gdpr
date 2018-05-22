@@ -76,6 +76,7 @@ class Wim_gdpr extends Module
         $this->registerHook('displayCMSHistory') &&
         $this->registerHook('displayWimGdprChecks') &&
         $this->registerHook('actionObjectCmsUpdateBefore') &&
+        $this->registerHook('actionCustomerAccountAdd') &&
         $this->registerHook('actionDispatcher');
     }
 
@@ -380,5 +381,14 @@ class Wim_gdpr extends Module
             $actionAcceptance = new WimGdprActionAcceptance($id_gdpr_cms_version, $id_cms);
             $actionAcceptance->save();
         }
+    }
+
+    public function hookActionCustomerAccountAdd($params)
+    {
+        $id_guest = $params['cookie']->id_guest;
+        $id_customer = $params['newCustomer']->id;
+        Db::getInstance()->executeS('UPDATE ' . _DB_PREFIX_ . 'wim_gdpr_action_acceptance SET id_customer = ' . $id_customer . ' WHERE id_guest = ' . $id_guest);
+        $insert = Db::getInstance()->getRow('SELECT id_gdpr_cms_version, date_add, ip_address, user_agent, user_browser, user_platform, url_on_acceptance FROM ' . _DB_PREFIX_ . 'wim_gdpr_action_acceptance WHERE id_customer = ' . $id_customer . ' and id_guest = ' . $id_guest);
+        Db::getInstance()->execute('INSERT INTO ' . _DB_PREFIX_ . 'wim_gdpr_user_acceptance VALUES(' . $id_customer . ',' . $insert['id_gdpr_cms_version'] . ',"' . $insert['date_add'] . '","' . $insert['ip_address'] . '","' . $insert['user_agent'] . '","' . $insert['user_browser'] . '","' . $insert['user_platform'] . '","' . $insert['url_on_acceptance'] . '")');
     }
 }
