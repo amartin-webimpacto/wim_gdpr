@@ -13,9 +13,9 @@
                 <div class="translatable-field lang-{$language.id_lang}"
                      {if !$smarty.foreach.language.first}style="display: none;"{/if}>
                     <div class="col-lg-9">
-                        <input type="text" id="modification_reason_for_a_new_{$language.id_lang}"
+                        <textarea type="text" id="modification_reason_for_a_new_{$language.id_lang}"
                                name="modification_reason_for_a_new_{$language.id_lang}"
-                               class="modification_reason_for_a_new" required="required">
+                               class="modification_reason_for_a_new rte autoload_rte" required="required"></textarea>
                     </div>
                     <div class="col-lg-2">
                         <button type="button" class="btn btn-default dropdown-toggle" tabindex="-1"
