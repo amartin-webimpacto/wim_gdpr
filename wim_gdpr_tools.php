@@ -365,7 +365,7 @@ class GdprTools extends ObjectModel
                     AND c.id_lang = ' . $language_id . '
                     AND cs.id_shop = s.id_shop
                     AND cs.id_cms = c.id_cms
-                    ORDER BY S.id_shop ASC , id_cms ASC;';
+                    ORDER BY s.id_shop ASC , id_cms ASC;';
         }
 
         $rows = Db::getInstance()->ExecuteS($sql);

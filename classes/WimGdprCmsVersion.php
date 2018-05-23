@@ -136,7 +136,7 @@ class WimGdprCmsVersion extends ObjectModel
                     "show_to_users" => $row[WimGdprCmsVersion::$ddbb_field_show_to_users],
                     "content" => $row[WimGdprCmsVersion::$ddbb_field_new_content],
                     "title" => $row[WimGdprCmsVersion::$ddbb_field_new_meta_title],
-                    "modification_reason_for_a_new" => $row[WimGdprCmsVersion::$ddbb_field_modification_reason_for_a_new]
+                    "modification_reason_for_a_new" => nl2br($row[WimGdprCmsVersion::$ddbb_field_modification_reason_for_a_new])
                 );
             }
         }

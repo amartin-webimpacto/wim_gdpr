@@ -12,7 +12,7 @@
                 <div class="modal-body">
                     <b>{l s='Título'}: </b>{$cms_version.title}
                     <br/>
-                    <b>{l s='Motivo de modificación'}: </b>{$cms_version.modification_reason_for_a_new}
+                    <b>{l s='Motivo de modificación'}: </b><div>{$cms_version.modification_reason_for_a_new}</div>
                     <br/>
                     <input class="hidden_cms_content" type="hidden" value="{$cms_version.content|escape:"html"} "/>
                     <button type="button" onclick="showModalCms({$cms_version.id_gdpr_cms_version})"
