@@ -86,7 +86,7 @@ class WimGdprCmsVersion extends ObjectModel
             WimGdprCmsVersion::$ddbb_field_new_meta_keywords => pSQL($newCms["new_meta_keywords"]),
             WimGdprCmsVersion::$ddbb_field_new_content => pSQL($newCms["new_content"]),
             WimGdprCmsVersion::$ddbb_field_new_link_rewrite => pSQL($newCms["new_link_rewrite"]),
-            WimGdprCmsVersion::$ddbb_field_modification_reason_for_a_new => pSQL($newCms["modification_reason_for_a_new"]),
+            WimGdprCmsVersion::$ddbb_field_modification_reason_for_a_new => Db::getInstance()->escape($newCms["modification_reason_for_a_new"],true),
             WimGdprCmsVersion::$ddbb_field_show_to_users => pSQL($newCms["show_to_users"]),
             WimGdprCmsVersion::$ddbb_field_date_add => date('Y-m-d H:i:s')
         );
