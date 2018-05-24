@@ -109,7 +109,9 @@ class WimGdprCmsVersion extends ObjectModel
         $data = array();
         $protectedCmsList = GdprTools::getProtectedCmsList();
         $shop_id = (int)Context::getContext()->shop->id;
-
+        if (!Context::getContext()->cookie->logged) {
+            return $data;
+        }
         $sql = 'SELECT v.*
                 FROM ' . _DB_PREFIX_ . 'wim_gdpr_cms_versions v, ' . _DB_PREFIX_ . 'cms_shop s
                 WHERE v.' . WimGdprCmsVersion::$ddbb_field_id_cms . ' = s.id_cms
