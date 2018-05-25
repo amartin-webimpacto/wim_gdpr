@@ -50,12 +50,7 @@ class WimGdprCmsVersion extends ObjectModel
         
     }*/
 
-    public function save()
-    {
-
-    }
-
-    public function add($newCms)
+    public function add($newCms = true, $null_values = false)
     {
         $id_cms = $newCms["id_cms"];
         $oldCms = GdprTools::getCms($id_cms, $newCms["id_lang"]);

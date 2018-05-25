@@ -4,7 +4,7 @@ require_once(dirname(__FILE__) . '../../../config/config.inc.php');
 require_once(dirname(__FILE__) . '../../../init.php');
 require_once(dirname(__FILE__) . '/wim_gdpr.php');
 
-$module = ModuleCore::getInstanceByName('wim_gdpr');
+$module = Module::getInstanceByName('wim_gdpr');
 
 switch (Tools::getValue('action')) {
     case 'acceptCms' :
