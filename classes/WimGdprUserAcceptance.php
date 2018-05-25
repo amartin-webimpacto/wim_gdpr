@@ -60,14 +60,4 @@ class WimGdprUserAcceptance extends ObjectModel
         return (Db::getInstance()->insert(WimGdprUserAcceptance::$ddbb_table, $wim_gdpr_user_acceptance));
     }
 
-    public function get()
-    {
-
-    }
-
-    public function getAll()
-    {
-
-    }
-
 }
