@@ -149,7 +149,7 @@ class Wim_gdpr extends Module
         $errors = array();
         parse_str($data, $outputForm);
         $cmsShops = GdprTools::getCMSshop($outputForm['id_cms']);
-        $langs = LanguageCore::getLanguages();
+        $langs = Language::getLanguages();
         // Comprobar que se ha insertado un motivo de modificacion
         foreach ($langs as $input) {
             if (!GdprTools::AreCmsEquals($outputForm['id_cms'], $input['id_lang'], $outputForm)) {
@@ -223,7 +223,7 @@ class Wim_gdpr extends Module
             $shopList[] = $shop;
         }
 
-        $languageList = LanguageCore::getLanguages();
+        $languageList = Language::getLanguages();
 
         // Tras la validación realizada por AJAX, aquí sólo nos queda comprobar si el CMS está protegido. De ser así, se guardará su versión en BBDD.
         if (count($languageList) > 0 && GdprTools::isCMSProtected((int)Tools::getValue('id_cms'))) {
@@ -303,10 +303,10 @@ class Wim_gdpr extends Module
         $this->doubleHook = true;
 
         $selectedShopList = GdprTools::getContextShop();
-        if (GdprTools::isCMSProtected(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), $selectedShopList)) {
-            $languageList = LanguageCore::getLanguages();
+        if (GdprTools::isCMSProtected(AdminCmsController::getFieldValue($this->object, 'id_cms'), $selectedShopList)) {
+            $languageList = Language::getLanguages();
             $this->smarty->assign('languageList', $languageList);
-            $this->smarty->assign('show_to_users', WimGdprCmsVersion::getCmsShowToUserValue(AdminCmsControllerCore::getFieldValue($this->object, 'id_cms'), GdprTools::getContextShop()));
+            $this->smarty->assign('show_to_users', WimGdprCmsVersion::getCmsShowToUserValue(AdminCmsController::getFieldValue($this->object, 'id_cms'), GdprTools::getContextShop()));
             $this->smarty->assign('url', __PS_BASE_URI__);
             $this->smarty->assign('current_id_shop', $this->context->shop->id);
 
