@@ -365,7 +365,7 @@ class Wim_gdpr extends Module
     {
         $list = Tools::getValue('check_cms_list');
         if (!$list) {
-            $list = null;
+            $list = [];
         }
 
         $total = Tools::getValue('check_cms_list_count');
