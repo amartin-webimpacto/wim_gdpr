@@ -303,10 +303,11 @@ class Wim_gdpr extends Module
         $this->doubleHook = true;
 
         $selectedShopList = GdprTools::getContextShop();
-        if (GdprTools::isCMSProtected(AdminCmsController::getFieldValue($this->object, 'id_cms'), $selectedShopList)) {
+
+        if (GdprTools::isCMSProtected(AdminCmsController::getFieldValue($this, 'id_cms'), $selectedShopList)) {
             $languageList = Language::getLanguages();
             $this->smarty->assign('languageList', $languageList);
-            $this->smarty->assign('show_to_users', WimGdprCmsVersion::getCmsShowToUserValue(AdminCmsController::getFieldValue($this->object, 'id_cms'), GdprTools::getContextShop()));
+            $this->smarty->assign('show_to_users', WimGdprCmsVersion::getCmsShowToUserValue(AdminCmsController::getFieldValue($this, 'id_cms'), GdprTools::getContextShop()));
             $this->smarty->assign('url', __PS_BASE_URI__);
             $this->smarty->assign('current_id_shop', $this->context->shop->id);
 
