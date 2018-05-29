@@ -65,7 +65,6 @@ class WimGdprCmsVersion extends ObjectModel
                 return true;
             }
         }
-
         $win_gdpr_cms_version = array(WimGdprCmsVersion::$ddbb_field_id_gdpr_cms_version => 0,
             WimGdprCmsVersion::$ddbb_field_id_cms => pSQL($id_cms),
             WimGdprCmsVersion::$ddbb_field_id_shop => pSQL($newCms["id_shop"]),
@@ -74,24 +73,19 @@ class WimGdprCmsVersion extends ObjectModel
             WimGdprCmsVersion::$ddbb_field_old_meta_title => pSQL($oldCms["meta_title"]),
             WimGdprCmsVersion::$ddbb_field_old_meta_description => pSQL($oldCms["meta_description"]),
             WimGdprCmsVersion::$ddbb_field_old_meta_keywords => pSQL($oldCms["meta_keywords"]),
-            WimGdprCmsVersion::$ddbb_field_old_content => pSQL($oldCms["content"]),
+            WimGdprCmsVersion::$ddbb_field_old_content => pSQL($oldCms["content"], true),
             WimGdprCmsVersion::$ddbb_field_old_link_rewrite => pSQL($oldCms["link_rewrite"]),
             WimGdprCmsVersion::$ddbb_field_new_meta_title => pSQL($newCms["new_meta_title"]),
             WimGdprCmsVersion::$ddbb_field_new_meta_description => pSQL($newCms["new_meta_description"]),
             WimGdprCmsVersion::$ddbb_field_new_meta_keywords => pSQL($newCms["new_meta_keywords"]),
-            WimGdprCmsVersion::$ddbb_field_new_content => pSQL($newCms["new_content"]),
+            WimGdprCmsVersion::$ddbb_field_new_content => pSQL($newCms["new_content"], true),
             WimGdprCmsVersion::$ddbb_field_new_link_rewrite => pSQL($newCms["new_link_rewrite"]),
-            WimGdprCmsVersion::$ddbb_field_modification_reason_for_a_new => Db::getInstance()->escape($newCms["modification_reason_for_a_new"],true),
+            WimGdprCmsVersion::$ddbb_field_modification_reason_for_a_new => pSQL($newCms["modification_reason_for_a_new"],true),
             WimGdprCmsVersion::$ddbb_field_show_to_users => pSQL($newCms["show_to_users"]),
             WimGdprCmsVersion::$ddbb_field_date_add => date('Y-m-d H:i:s')
         );
 
         return (Db::getInstance()->insert(WimGdprCmsVersion::$ddbb_table, $win_gdpr_cms_version));
-    }
-
-    public function getAll()
-    {
-
     }
 
     /**
