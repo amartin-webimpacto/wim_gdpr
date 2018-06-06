@@ -337,7 +337,7 @@ class Wim_gdpr extends Module
      */
     public function hookDisplayWimGdprChecks($params)
     {
-        if ($params["id"] != null) {
+        if (isset($params['id']) && $params["id"] != null) {
             $params["id"] = preg_replace('/\s+/', '', $params["id"]);
             $params["id"] = explode(",", $params["id"]);
         }
@@ -346,12 +346,12 @@ class Wim_gdpr extends Module
         $rows = GdprTools::getCmsList();
         $list = array();
         foreach ($rows as $row) {
-            if (GdprTools::isCMSProtected($row["id_cms"]) && $row['active'] == '1') {
-                if ($params["id"] != null) {
-                    if (!in_array($row['id_cms'], $params["id"])) {
-                        continue;
-                    }
+            if (isset($params['id']) && $params["id"] != null) {
+                if (in_array($row["id_cms"], $params["id"])) {
+                    $row['link'] = $link->getCMSLink((int)$row['id_cms'], $row['link_rewrite']);
+                    $list[] = $row;
                 }
+            } else if (GdprTools::isCMSProtected($row["id_cms"]) && $row['active'] == '1') {
                 $row['link'] = $link->getCMSLink((int)$row['id_cms'], $row['link_rewrite']);
                 $list[] = $row;
             }
@@ -369,12 +369,19 @@ class Wim_gdpr extends Module
             $list = [];
         }
 
-        $total = Tools::getValue('check_cms_list_count');
+        // Por si hubiera varios hooks en un mismo formulario: control de "totales"
+        $total = 0;
+        $totales = Tools::getValue('check_cms_list_count');
+        if (!is_null($totales) && $totales != '' && count($totales) > 0) {
+            foreach ($totales as $total_e) {
+                $total = $total + $total_e;
+            }
+        }
+        //$total = Tools::getValue('check_cms_list_count');
         if (count($list) < $total) {
-            $this->context->controller->errors[] = 'Debe aceptar las condiciones';
+            $this->context->controller->errors[] = 'Debe aceptar las condiciones.';
             return '';
         }
-
         foreach ($list as $id_cms) {
             $lastVersion = WimGdprCmsVersion::getLast($id_cms, Context::getContext()->language->id, Context::getContext()->shop->id);
             $id_gdpr_cms_version = $lastVersion[WimGdprCmsVersion::$ddbb_field_id_gdpr_cms_version];
