@@ -365,20 +365,25 @@ class Wim_gdpr extends Module
     public function hookActionDispatcher()
     {
         $list = Tools::getValue('check_cms_list');
+        $subtotal = 0;
+
         if (!$list) {
             $list = [];
+        } else {
+            $subtotal = count($list);
+            $list = explode(",", $list[0]);
         }
 
         // Por si hubiera varios hooks en un mismo formulario: control de "totales"
         $total = 0;
         $totales = Tools::getValue('check_cms_list_count');
-        if (!is_null($totales) && $totales != '' && count($totales) > 0) {
+        if (!is_null($totales) && $totales!='' && count($totales) > 0){
             foreach ($totales as $total_e) {
                 $total = $total + $total_e;
             }
         }
-        //$total = Tools::getValue('check_cms_list_count');
-        if (count($list) < $total) {
+
+        if ($subtotal < $total) {
             $this->context->controller->errors[] = 'Debe aceptar las condiciones.';
             return '';
         }
@@ -389,6 +394,7 @@ class Wim_gdpr extends Module
             $actionAcceptance = new WimGdprActionAcceptance($id_gdpr_cms_version, $id_cms);
             $actionAcceptance->save();
         }
+
     }
 
 
