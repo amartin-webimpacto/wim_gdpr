@@ -71,24 +71,35 @@ class WimGdprActionAcceptance extends ObjectModel
         return (Db::getInstance()->insert(WimGdprActionAcceptance::$ddbb_table, $wim_gdpr_action_acceptance));
     }
 
-   /* public function add($id_gdpr_cms_version)
-    {
-        $tools = new GdprTools();
+    /* public function add($id_gdpr_cms_version)
+     {
+         $tools = new GdprTools();
 
-        $wim_gdpr_action_acceptance = array(
-            WimGdprActionAcceptance::$ddbb_field_id_gdpr_action_acceptance => 0,
-            WimGdprActionAcceptance::$ddbb_field_id_guest => int(Context::getContext()->customer->id_guest),
-            WimGdprActionAcceptance::$ddbb_field_id_customer => int($tools->getCurrentCustomer()),
-            WimGdprActionAcceptance::$ddbb_field_id_gdpr_cms_version => pSQL($id_gdpr_cms_version),
-            WimGdprActionAcceptance::$ddbb_field_date_add => date('Y-m-d H:i:s'),
-            WimGdprActionAcceptance::$ddbb_field_ip_address => pSQL($tools->getUserIpAdress()),
-            WimGdprActionAcceptance::$ddbb_field_user_agent => pSQL($tools->getUserAgent()),
-            WimGdprActionAcceptance::$ddbb_field_user_browser => pSQL($tools->getUserBrowser()),
-            WimGdprActionAcceptance::$ddbb_field_user_platform => pSQL($tools->getUserPlatform()),
-            WimGdprActionAcceptance::$ddbb_field_url_on_acceptance => pSQL($tools->getURLOnAcceptance())
-        );
-        return (Db::getInstance()->insert(WimGdprActionAcceptance::$ddbb_table, $wim_gdpr_action_acceptance));
+         $wim_gdpr_action_acceptance = array(
+             WimGdprActionAcceptance::$ddbb_field_id_gdpr_action_acceptance => 0,
+             WimGdprActionAcceptance::$ddbb_field_id_guest => int(Context::getContext()->customer->id_guest),
+             WimGdprActionAcceptance::$ddbb_field_id_customer => int($tools->getCurrentCustomer()),
+             WimGdprActionAcceptance::$ddbb_field_id_gdpr_cms_version => pSQL($id_gdpr_cms_version),
+             WimGdprActionAcceptance::$ddbb_field_date_add => date('Y-m-d H:i:s'),
+             WimGdprActionAcceptance::$ddbb_field_ip_address => pSQL($tools->getUserIpAdress()),
+             WimGdprActionAcceptance::$ddbb_field_user_agent => pSQL($tools->getUserAgent()),
+             WimGdprActionAcceptance::$ddbb_field_user_browser => pSQL($tools->getUserBrowser()),
+             WimGdprActionAcceptance::$ddbb_field_user_platform => pSQL($tools->getUserPlatform()),
+             WimGdprActionAcceptance::$ddbb_field_url_on_acceptance => pSQL($tools->getURLOnAcceptance())
+         );
+         return (Db::getInstance()->insert(WimGdprActionAcceptance::$ddbb_table, $wim_gdpr_action_acceptance));
+     }
+ */
+    /**
+     * Devuelve el último registro insertado en BBDD
+     * @return array|bool|null|object
+     */
+    public function getLast()
+    {
+        $sql = 'SELECT *
+                FROM ' . _DB_PREFIX_ .  WimGdprActionAcceptance::$ddbb_table.'
+                ORDER BY `'. WimGdprActionAcceptance::$ddbb_field_id_gdpr_action_acceptance.'` DESC';
+        return Db::getInstance()->getRow($sql);
     }
-*/
 
 }
