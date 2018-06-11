@@ -1,5 +1,5 @@
 <!-- MOTIVO -->
-<label>{l s='Motivo de modificación'} </label>
+<label>{l mod='wim_gdpr' s='Motivo de modificación'} </label>
 <div class="margin-form">
     <div class="translatable">
         {foreach from=$languageList item=language name=language}
@@ -9,7 +9,7 @@
                        id="modification_reason_for_a_new_{$language.id_lang}"
                        class="modification_reason_for_a_new" required="required">
             <span class="hint" name="help_box"
-                  style="display: none;">{l s='Este CMS está protegido por WebImpacto GDPR y es obligatorio indicar el motivo de su modificación'}
+                  style="display: none;">{l mod='wim_gdpr' s='Este CMS está protegido por WebImpacto GDPR y es obligatorio indicar el motivo de su modificación'}
                 <span class="hint-pointer">&nbsp;</span>
             </span>
             </div>
@@ -19,7 +19,7 @@
                                          alt="{$languageList[0].name}" onclick="toggleLanguageFlags(this)">
         </div>
 
-        <div class="language_flags">{l s='Elige idioma'}:<br><br>
+        <div class="language_flags">{l mod='wim_gdpr' s='Elige idioma'}:<br><br>
             {foreach from=$languageList item=languageB}
                 <img class="pointer" src="../img/l/{$languageB.id_lang}.jpg" alt="{$languageB.name}"
                      style="margin: 2px;"
@@ -39,21 +39,21 @@
 
 <div class="form-group">
     <label class="control-label col-lg-3">
-        {l s='Mostrar a usuarios'}
+        {l mod='wim_gdpr' s='Mostrar a usuarios'}
     </label>
 
     <div class="col-lg-9">
         <select name="show_to_users" id="show_to_users">
             <option value="0"
-                    {if $show_to_users == 0}selected="selected"{/if}>{l s='Ni se muestra en el CMS en el front la
+                    {if $show_to_users == 0}selected="selected"{/if}>{l mod='wim_gdpr' s='Ni se muestra en el CMS en el front la
                 razón de cambio, ni se pedirá aceptación por parte de los usuarios si es la última versión'}
             </option>
             <option value="1"
-                    {if $show_to_users == 1}selected="selected"{/if}>{l s='Se muestra en el CMS en el front la razón
+                    {if $show_to_users == 1}selected="selected"{/if}>{l mod='wim_gdpr' s='Se muestra en el CMS en el front la razón
                 de cambio y se pedirá aceptación por parte de los usuarios si es la última versión'}
             </option>
             <option value="2"
-                    {if $show_to_users == 2}selected="selected"{/if}>{l s='Se muestra en el CMS en el front la razón
+                    {if $show_to_users == 2}selected="selected"{/if}>{l mod='wim_gdpr' s='Se muestra en el CMS en el front la razón
                 de cambio pero NO pedirá aceptación por parte de los usuarios si es la última versión'}
             </option>
         </select>
