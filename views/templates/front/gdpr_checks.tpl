@@ -19,5 +19,5 @@
     {/foreach}
     <input type="hidden" name="check_cms_list_count[]" id="check_cms_list_count" value="1"/>
     <input type="checkbox" name="check_cms_list[]" value="{$id_cms_list}"/>
-    <span>{l s='Entiendo que he leído y acepto'} {$span}</span>
+    <span>{l mod='wim_gdpr' s='Entiendo que he leído y acepto'} {$span}</span>
 </div>

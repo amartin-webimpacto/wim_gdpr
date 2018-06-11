@@ -3,7 +3,7 @@
     <label class="control-label col-lg-3 required">
         <span class="label-tooltip" data-toggle="tooltip" data-html="true" title=""
               data-original-title="Este CMS está protegido por WebImpacto GDPR y es obligatorio indicar el motivo de su modificación">
-        {l s='Motivo de modificación'}
+        {l mod='wim_gdpr' s='Motivo de modificación'}
         </span>
     </label>
 
@@ -41,17 +41,17 @@
 <!-- SHOW TO USERS -->
 <div class="form-group">
     <label class="control-label col-lg-3">
-        {l s='Mostrar a usuarios'}
+        {l mod='wim_gdpr' s='Mostrar a usuarios'}
     </label>
 
     <div class="col-lg-9">
         <select name="show_to_users" id="show_to_users">
             <option value="0"
-                    {if $show_to_users == 0}selected="selected"{/if}>{l s='Ni se muestra en el CMS en el front la razón de cambio, ni se pedirá aceptación por parte de los usuarios si es la última versión'}</option>
+                    {if $show_to_users == 0}selected="selected"{/if}>{l mod='wim_gdpr' s='Ni se muestra en el CMS en el front la razón de cambio, ni se pedirá aceptación por parte de los usuarios si es la última versión'}</option>
             <option value="1"
-                    {if $show_to_users == 1}selected="selected"{/if}>{l s='Se muestra en el CMS en el front la razón de cambio y se pedirá aceptación por parte de los usuarios si es la última versión'}</option>
+                    {if $show_to_users == 1}selected="selected"{/if}>{l mod='wim_gdpr' s='Se muestra en el CMS en el front la razón de cambio y se pedirá aceptación por parte de los usuarios si es la última versión'}</option>
             <option value="2"
-                    {if $show_to_users == 2}selected="selected"{/if}>{l s='Se muestra en el CMS en el front la razón de cambio pero NO pedirá aceptación por parte de los usuarios si es la última versión'}</option>
+                    {if $show_to_users == 2}selected="selected"{/if}>{l mod='wim_gdpr' s='Se muestra en el CMS en el front la razón de cambio pero NO pedirá aceptación por parte de los usuarios si es la última versión'}</option>
         </select>
     </div>
 </div>
